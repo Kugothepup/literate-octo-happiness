@@ -19,9 +19,9 @@
     "1000": 4.2
   },
   "historicalComparisonBars": [
-    { "label": "ERA5 Mean (1940–2025)", "wave1M": 310, "wave2M": 145 },
-    { "label": "Strong El Niño Nov Avg", "wave1M": 465, "wave2M": 210 },
-    { "label": "Nov 2026 Early-SSW Event", "wave1M": 890, "wave2M": 540 }
+    { "label": "Average November, 1940–2025", "wave1M": 310, "wave2M": 145 },
+    { "label": "Strong El Niño Novembers", "wave1M": 465, "wave2M": 210 },
+    { "label": "November 2026", "wave1M": 890, "wave2M": 540 }
   ],
   "sswThresholds": {
     "majorReversalMs": 0.0,

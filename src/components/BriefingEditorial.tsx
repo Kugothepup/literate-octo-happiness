@@ -6,12 +6,10 @@ import {
   Compass,
   Eye,
   Globe2,
-  Mail,
   Quote,
   Snowflake,
   Sparkles,
   Waves,
-  Youtube,
 } from 'lucide-react';
 import baseline from '../data/historicalBaseline.json';
 import type { AtmosphereSnapshot, BeatId } from '../types/weather';
@@ -22,65 +20,61 @@ interface BriefingEditorialProps {
 }
 
 const SECTION_LINKS = [
-  { id: 'briefing-exec', label: 'Executive Summary' },
-  { id: 'briefing-uk', label: 'UK Weather' },
-  { id: 'briefing-ssw', label: 'SSW & Waves' },
-  { id: 'briefing-outlook', label: 'Winter Outlook' },
-  { id: 'briefing-global', label: 'Global Events' },
-  { id: 'briefing-quotes', label: 'Key Quotes' },
+  { id: 'briefing-exec', label: 'In short' },
+  { id: 'briefing-uk', label: 'UK this week' },
+  { id: 'briefing-ssw', label: 'What happened up high' },
+  { id: 'briefing-outlook', label: 'Into December' },
+  { id: 'briefing-global', label: 'Around the world' },
+  { id: 'briefing-quotes', label: 'In their words' },
 ] as const;
 
 const UK_FORECAST_ROWS = [
   {
-    timeframe: 'Mid-Week (Wed–Fri)',
-    characteristics:
-      'North-South Split; messy rain across south; drier, sunnier in north.',
-    context:
-      'Southern rain is beneficial for severe drought conditions and ongoing hosepipe bans.',
+    timeframe: 'Midweek (Wed–Fri)',
+    characteristics: 'A north–south split: messy rain in the south, drier and sunnier in the north.',
+    context: 'Welcome rain for the south, where drought and hosepipe bans continue.',
   },
   {
-    timeframe: 'Friday Night / Sat Morning',
-    characteristics:
-      'Clear, fine start in many areas before incoming low pressure.',
-    context:
-      'Extreme cold; potential overnight lows of -8°C to -9°C (following -7.7°C at Tulloch Bridge).',
+    timeframe: 'Friday night to Saturday morning',
+    characteristics: 'A clear, fine start for many before low pressure arrives.',
+    context: 'Very cold: lows of -8°C to -9°C possible, after -7.7°C at Tulloch Bridge.',
   },
   {
-    timeframe: 'Late Saturday – Sunday',
-    characteristics:
-      'Low pressure interacts with jet stream; wet weather moves east.',
-    context: 'Transition to milder air accompanied by rain and wind.',
+    timeframe: 'Late Saturday to Sunday',
+    characteristics: 'Low pressure meets the jet stream and rain spreads east.',
+    context: 'Turning milder, with rain and wind.',
   },
 ] as const;
 
+// Quotes are kept word for word. Only the topic and context lines are editorial.
 const DEDICATED_QUOTES = [
   {
-    topic: 'On Snow Depth Data Deficits',
+    topic: 'On measuring snow',
     quote:
       "It's actually really tricky for us to know too clearly because we don't have a huge number of snow depth gauges around the country. It's unfortunate. We don't have anywhere near as many as we do rain gauges or thermometers...",
     author: 'Alex Burkill',
-    context: 'Addressing the observational challenges during early winter snow events.',
+    context: 'on why snow totals are hard to pin down.',
   },
   {
-    topic: 'On the Unprecedented Nature of the Stratospheric Waves',
+    topic: 'On how strong the waves were',
     quote:
       "A wave it was a significantly strong wave two, the strongest in this data record which goes back to the 1940s, not the strongest wave one, but when you combine the two together much stronger than anything we'd had in the past and much stronger than previous El Nino years...",
     author: 'Alex Burkill',
-    context: "Synthesizing Deputy Chief Meteorologist Nick Silksman's ERA5 re-analysis.",
+    context: "summing up Nick Silksman's analysis of the records.",
   },
   {
-    topic: 'On Atmospheric Downward Propagation ("Oozing")',
+    topic: 'On the drip down',
     quote:
       "...what you can see is that those darker blues are sort of dripping down, oozing through the atmosphere and then impacting the weather nearer the surface and we're going to feel the influence of that slowing down of that usual westerly wind...",
     author: 'Alex Burkill',
-    context: 'Explaining how stratospheric wind disruptions descend to surface weather levels.',
+    context: 'on how the slowdown high up reaches the surface.',
   },
   {
-    topic: 'On the Severe Impacts of Cyclonic Storm Akvan',
+    topic: 'On Cyclonic Storm Akvan',
     quote:
       "This area has already seen two tropical cyclones in less than a month. So the ground is very saturated. There's the potential for a further 150, maybe 250 millimetres of rain, large storm surge, strong, gusty winds.",
     author: 'Alex Burkill',
-    context: 'Highlighting compounding weather risks in India and Bangladesh.',
+    context: 'on the risks for India and Bangladesh.',
   },
 ] as const;
 
@@ -93,6 +87,8 @@ function jumpToSection(id: string) {
 
 export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialProps) {
   const maxBarWave1 = Math.max(...baseline.historicalComparisonBars.map((b) => b.wave1M));
+  const isLive = snapshot.fetchSource === 'live-api' || snapshot.fetchSource === 'cached-live';
+  const vortexWind = snapshot.stratosphere60N.zonalMeanWindMs;
 
   return (
     <section
@@ -101,45 +97,36 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
     >
       <div className="bg-[#050b18]/95 border-t border-slate-800/80 backdrop-blur-md">
         <div className="mx-auto max-w-5xl px-4 sm:px-8 pt-14 pb-8 space-y-16">
-          {/* Editorial Hero Header + Sticky-Style Jump Pills */}
+          {/* Header + section links */}
           <header className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/35 bg-sky-500/10 px-3 py-1 text-[11px] font-mono uppercase tracking-widest text-sky-300">
-                <BookOpen className="w-3.5 h-3.5" />
-                Briefing Document · Met Office Deep Dive Synthesis
+                <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
+                The full briefing · Met Office Deep Dive, 17 Nov 2026
               </span>
-              <button
-                type="button"
-                onClick={() => onJumpBeat(1)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-900/80 hover:border-sky-400/50 hover:text-sky-200 px-3 py-1.5 text-xs font-mono text-slate-300 transition"
-              >
-                <ArrowUp className="w-3.5 h-3.5" />
-                Return to 3D Globe
-              </button>
             </div>
 
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
-                Stratospheric Dynamics, UK Winter Outlook, and Global Weather Phenomena
+                What November’s polar vortex shock could mean for winter
               </h1>
               <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-3xl">
-                Complete meteorological synthesis of the Met Office weekly Deep Dive analysis, linking the
-                record-breaking early Sudden Stratospheric Warming to UK winter probabilities and active global weather events.
+                A plain-English summary of the Met Office’s weekly Deep Dive: what happened 30 km above the Arctic,
+                what it could mean for UK weather into December, and what else forecasters were watching.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono text-slate-300">
               <span className="rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1">
-                Presenter: <strong className="text-white">Alex Burkill</strong> (Meteorologist)
+                Presented by <strong className="text-white">Alex Burkill</strong>, Met Office meteorologist
               </span>
               <span className="rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1">
-                ERA5 Analysis: <strong className="text-white">Nick Silksman</strong> (Deputy Chief Meteorologist)
+                Records analysis by <strong className="text-white">Nick Silksman</strong>, Deputy Chief Meteorologist
               </span>
               <span className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-indigo-200">
-                Active Telemetry: UK {snapshot.ukSurface.tempC.toFixed(1)}°C (Feels{' '}
-                {snapshot.ukSurface.feelsLikeC.toFixed(1)}°C) · 60°N u10{' '}
-                {snapshot.stratosphere60N.zonalMeanWindMs.toFixed(1)} m/s · Scandi{' '}
-                {Math.round(snapshot.scandiHigh.pressureMslHpa)} hPa
+                {isLive ? 'Live now' : 'Case study'}: UK {snapshot.ukSurface.tempC.toFixed(1)}°C (feels{' '}
+                {snapshot.ukSurface.feelsLikeC.toFixed(1)}°C) · vortex wind {vortexWind > 0 ? '+' : ''}
+                {vortexWind.toFixed(1)} m/s · Scandinavia {Math.round(snapshot.scandiHigh.pressureMslHpa)} hPa
               </span>
             </div>
 
@@ -157,39 +144,39 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
             </nav>
           </header>
 
-          {/* 1. Executive Summary */}
+          {/* 1. In short */}
           <section id="briefing-exec" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <Sparkles className="w-5 h-5 text-sky-400" />
-              <h2 className="text-2xl font-semibold text-white">Executive Summary</h2>
+              <Sparkles className="w-5 h-5 text-sky-400" aria-hidden="true" />
+              <h2 className="text-2xl font-semibold text-white">In short</h2>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-xl border border-violet-500/30 bg-slate-900/70 p-4">
                 <div className="text-[10px] font-mono uppercase tracking-wider text-violet-300">
-                  ERA5 Historical Rank
+                  Since records began (1940s)
                 </div>
-                <div className="mt-1 text-xl font-bold font-mono text-white">1940s+ Record</div>
+                <div className="mt-1 text-xl font-bold font-mono text-white">Strongest</div>
                 <p className="mt-1 text-xs text-slate-400">
-                  Unprecedented combined Wave 2 + Wave 1 forcing in late Oct / early Nov.
+                  Wave 1 and wave 2 together, for so early in the season.
                 </p>
               </div>
               <div className="rounded-xl border border-sky-500/30 bg-slate-900/70 p-4">
                 <div className="text-[10px] font-mono uppercase tracking-wider text-sky-300">
-                  Surface Coupling Lag
+                  Time to reach the ground
                 </div>
-                <div className="mt-1 text-xl font-bold font-mono text-white">2–6 Weeks</div>
+                <div className="mt-1 text-xl font-bold font-mono text-white">2–6 weeks</div>
                 <p className="mt-1 text-xs text-slate-400">
-                  Stratospheric signals dripping down toward early December blocking.
+                  For the shock to drip down, pointing to early December.
                 </p>
               </div>
               <div className="rounded-xl border border-amber-500/30 bg-slate-900/70 p-4">
                 <div className="text-[10px] font-mono uppercase tracking-wider text-amber-300">
-                  Short-Term Northern Cold
+                  Coldest nights forecast
                 </div>
                 <div className="mt-1 text-xl font-bold font-mono text-white">-8°C to -9°C</div>
                 <p className="mt-1 text-xs text-slate-400">
-                  Sharp frosts in the north while southern jet rains ease drought.
+                  Frost in the north, while rain in the south helps ease the drought.
                 </p>
               </div>
               <div className="rounded-xl border border-rose-500/30 bg-slate-900/70 p-4">
@@ -198,71 +185,63 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
                 </div>
                 <div className="mt-1 text-xl font-bold font-mono text-white">150–250 mm</div>
                 <p className="mt-1 text-xs text-slate-400">
-                  Extreme rainfall threat over saturated ground in India &amp; Bangladesh.
+                  More rain possible on saturated ground in India and Bangladesh.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4 text-sm sm:text-base leading-relaxed text-slate-300">
+            <div className="space-y-4 text-sm sm:text-base leading-relaxed text-slate-300 max-w-3xl">
               <p>
-                This briefing document synthesizes key meteorological insights, stratospheric analyses, and global
-                weather events detailed in the Met Office&apos;s weekly Deep Dive analysis presented by meteorologist{' '}
-                <strong className="text-white">Alex Burkill</strong>.
+                <strong className="text-white">The big story:</strong> the ring of winds circling the North Pole,
+                30 km up, was knocked off course unusually early this winter. Two giant waves in the atmosphere hit it
+                one after the other in late October and early November. Met Office analysis of records back to the
+                1940s found that, together, they were stronger than any early-season event on record, including those
+                in strong El Niño years.
               </p>
               <p>
-                The primary takeaway is the occurrence of an exceptionally early{' '}
-                <strong className="text-white">Sudden Stratospheric Warming (SSW)</strong> event driven by an
-                unprecedented combination of planetary wave activities. Historical re-analysis back to the 1940s reveals
-                that the combined force of Wave 2 and Wave 1 atmospheric disturbances in late October and early November
-                was stronger than any previously recorded early-season event, including those during strong El Niño years.
+                That shock is now &ldquo;dripping down&rdquo; through the atmosphere. If it follows the usual pattern,
+                it will reach ground level over the next two to six weeks.
               </p>
               <p>
-                This stratospheric breakdown is currently &ldquo;dripping down&rdquo; through the atmosphere, with
-                surface-level impacts expected to materialize over the next two to six weeks. While short-term UK
-                weather remains dominated by a jet stream positioned to the south—bringing heavy rain to drought-stricken
-                southern regions and sharp frosts reaching <span className="font-mono text-sky-200">-8°C to -9°C</span> in
-                the north—the medium-to-long-term outlook points to an increased likelihood of atmospheric blocking high
-                pressure and colder conditions developing by early December.
+                For now, UK weather is set by a jet stream running to the south. That means rain for the drought-hit
+                south and sharp frosts of <span className="font-mono text-sky-200">-8°C to -9°C</span> in the north.
+                Further ahead, the chance of blocking high pressure and colder weather rises into early December.
               </p>
               <p>
-                Globally, significant weather phenomena include Cyclonic Storm Akvan approaching India and Bangladesh with
-                heavy rainfall (150–250 mm), a severe tropical cyclone in the South Pacific, the annual weather-triggered
-                red crab migration on Christmas Island, and variable viewing conditions for the peak of the Leonid
-                meteor shower.
+                The Deep Dive also covered Cyclonic Storm Akvan heading for India and Bangladesh, a severe cyclone in
+                the South Pacific, Christmas Island’s red crab migration and the Leonid meteor shower.
               </p>
             </div>
           </section>
 
-          {/* 2. Short-Term UK Weather & Observational Data */}
+          {/* 2. UK this week */}
           <section id="briefing-uk" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <Snowflake className="w-5 h-5 text-sky-400" />
-              <h2 className="text-2xl font-semibold text-white">Short-Term UK Weather &amp; Observational Data</h2>
+              <Snowflake className="w-5 h-5 text-sky-400" aria-hidden="true" />
+              <h2 className="text-2xl font-semibold text-white">UK weather this week</h2>
             </div>
 
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-lg font-semibold text-white">
-                  Recent Snowfall &amp; Measurement Challenges
-                </h3>
+                <h3 className="text-lg font-semibold text-white">How much snow fell? Hard to say</h3>
                 <button
                   type="button"
                   onClick={() => onJumpBeat(1)}
                   className="text-xs font-mono text-sky-300 hover:text-sky-200 transition"
                 >
-                  Inspect Beat 1 in 3D →
+                  See the jet stream in 3D →
                 </button>
               </div>
               <p className="text-sm leading-relaxed text-slate-300">
-                Recent weather brought accumulated snowfall of several centimeters to parts of northern England and
-                southern Scotland as incoming weather systems interacted with cold air masses.
+                Several centimetres of snow settled in parts of northern England and southern Scotland as weather
+                systems ran into cold air.
               </p>
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-slate-200">
                 <span className="font-mono text-[10px] uppercase tracking-wider text-amber-300 block mb-1">
-                  Observational Limitation
+                  Why it’s hard to measure
                 </span>
-                The Met Office highlighted the challenge in measuring precise snow accumulation due to a nationwide
-                shortage of dedicated snow depth gauges compared to standard rain gauges and thermometers.
+                The UK has far fewer snow depth gauges than rain gauges or thermometers, so exact totals are
+                uncertain.
               </div>
               <blockquote className="border-l-2 border-sky-400 pl-4 italic text-sm text-slate-300">
                 &ldquo;Exactly how much snow? It&apos;s actually really tricky for us to know too clearly because we
@@ -273,26 +252,24 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">Mid-to-Late November UK Forecast</h3>
+              <h3 className="text-lg font-semibold text-white">The rest of November</h3>
               <p className="text-sm text-slate-300">
-                The immediate pattern is shaped by a strong jet stream running south of the UK, maintaining cold air over
-                northern regions while changeable conditions affect the south.
+                A strong jet stream running south of the UK keeps cold air over the north and changeable weather in
+                the south.
               </p>
               <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60">
                 <table className="w-full text-left text-sm">
                   <thead className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-mono uppercase tracking-wider text-slate-400">
                     <tr>
-                      <th className="px-4 py-3">Timeframe / Region</th>
-                      <th className="px-4 py-3">Weather Characteristics</th>
-                      <th className="px-4 py-3">Temperature / Environmental Context</th>
+                      <th className="px-4 py-3">When</th>
+                      <th className="px-4 py-3">What to expect</th>
+                      <th className="px-4 py-3">Worth knowing</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/80 text-slate-300">
                     {UK_FORECAST_ROWS.map((row) => (
                       <tr key={row.timeframe} className="hover:bg-slate-800/30 transition">
-                        <td className="px-4 py-3.5 font-medium text-white whitespace-nowrap">
-                          {row.timeframe}
-                        </td>
+                        <td className="px-4 py-3.5 font-medium text-white whitespace-nowrap">{row.timeframe}</td>
                         <td className="px-4 py-3.5">{row.characteristics}</td>
                         <td className="px-4 py-3.5">{row.context}</td>
                       </tr>
@@ -303,90 +280,95 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
             </div>
           </section>
 
-          {/* 3. SSW Mechanics & Planetary Wave Analysis */}
+          {/* 3. What happened up high */}
           <section id="briefing-ssw" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <Waves className="w-5 h-5 text-violet-400" />
-              <h2 className="text-2xl font-semibold text-white">
-                Sudden Stratospheric Warming (SSW) Mechanics &amp; Wave Analysis
-              </h2>
+              <Waves className="w-5 h-5 text-violet-400" aria-hidden="true" />
+              <h2 className="text-2xl font-semibold text-white">What happened 30 km up</h2>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              {/* Breakdown Mechanism + Diagram */}
+              {/* How it breaks down + diagram */}
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-lg font-semibold text-white">Atmospheric Breakdown Mechanism</h3>
+                  <h3 className="text-lg font-semibold text-white">How a polar vortex breaks down</h3>
                   <button
                     type="button"
                     onClick={() => onJumpBeat(3)}
-                    className="text-xs font-mono text-violet-300 hover:text-violet-200 transition"
+                    className="text-xs font-mono text-violet-300 hover:text-violet-200 transition shrink-0"
                   >
-                    Inspect Beat 3 in 3D →
+                    Watch it in 3D →
                   </button>
                 </div>
                 <p className="text-sm leading-relaxed text-slate-300">
-                  An SSW occurs approximately 30 kilometers above the Earth&apos;s surface in the stratosphere (at the 10
-                  hectopascal pressure level). During autumn and winter, cold air over the North Pole is encircled by
-                  westerly winds forming the stratospheric polar vortex. When this vortex breaks down, winds slow or
-                  reverse to an easterly direction, causing air within the vortex to merge, sink, and rapidly warm.
+                  About 30 km up, in the stratosphere, a ring of westerly winds circles the North Pole through autumn
+                  and winter, trapping very cold air inside. This is the polar vortex. When it breaks down, the winds
+                  slow or reverse, and the air inside sinks and warms quickly. That’s a sudden stratospheric warming,
+                  or SSW.
                 </p>
 
-                {/* Clean Flow Diagram mirroring the SSW schematic */}
                 <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-4 space-y-3 font-mono text-xs">
                   <div className="rounded-lg border border-indigo-500/40 bg-indigo-500/10 px-3 py-2 text-center text-indigo-200 font-semibold">
-                    Stratospheric Polar Vortex (10 hPa / ~30 km up)
+                    The polar vortex · 30 km up (10 hPa)
                   </div>
                   <div className="grid sm:grid-cols-2 gap-2.5 pl-3 border-l-2 border-slate-700">
                     <div className="rounded-lg border border-violet-500/35 bg-violet-500/10 p-2.5 text-slate-200">
-                      <span className="block text-[10px] text-violet-300 font-semibold">
-                        Wave 2 (Late Oct)
-                      </span>
-                      Pinches vortex into dumbbell shape (Slowing / Splitting)
+                      <span className="block text-[10px] text-violet-300 font-semibold">Wave 2 · late October</span>
+                      Squeezes the vortex into a dumbbell, slowing and splitting it
                     </div>
                     <div className="rounded-lg border border-rose-500/35 bg-rose-500/10 p-2.5 text-slate-200">
-                      <span className="block text-[10px] text-rose-300 font-semibold">
-                        Wave 1 (Early Nov)
-                      </span>
-                      Single ridge displaces vortex toward Russia
+                      <span className="block text-[10px] text-rose-300 font-semibold">Wave 1 · early November</span>
+                      One big ridge pushes it off the pole towards Russia
                     </div>
                   </div>
                   <div className="rounded-lg border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-center text-sky-200 font-semibold">
-                    Result: Major SSW Event &amp; Downward Atmospheric Propagation (~2–6 Weeks to Surface)
+                    Result: a likely major SSW, then a slow drip down to the ground over 2–6 weeks
                   </div>
                 </div>
               </div>
 
-              {/* Classification + Historical Comparison Bars */}
+              {/* Major or minor + wave comparison */}
               <div className="space-y-6">
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3">
-                  <h3 className="text-lg font-semibold text-white">Classification: Major vs. Minor SSW</h3>
+                  <h3 className="text-lg font-semibold text-white">Major or minor? Probably major</h3>
                   <ul className="space-y-2.5 text-sm text-slate-300">
                     <li>
-                      <strong className="text-white">Status:</strong> The event is highly likely to have been a{' '}
-                      <span className="text-rose-300 font-medium">Major SSW</span>, which requires stratospheric
-                      westerly winds to fully reverse to an easterly direction.
+                      <strong className="text-white">Likely major.</strong> That means the westerly winds fully
+                      reversed to blow from the east.
                     </li>
                     <li>
-                      <strong className="text-white">Verification:</strong> Full 100% confirmation requires formal
-                      meteorological re-analysis. However, the surface-level impacts remain functionally identical
-                      whether the winds fully reversed or merely decayed into a very weak westerly pattern.
+                      <strong className="text-white">Not yet confirmed.</strong> That needs a formal re-analysis. For
+                      our weather it barely matters: winds that fully reversed and winds that almost stopped have much
+                      the same effect at the surface.
                     </li>
                   </ul>
                 </div>
 
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <BarChart3 className="w-4 h-4 text-violet-400" />
-                    <span>ERA5 Planetary Wave Comparison (1940–present)</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                      <BarChart3 className="w-4 h-4 text-violet-400" aria-hidden="true" />
+                      <span>How big were the waves?</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[10px] font-mono text-slate-400">
+                      <span className="inline-flex items-center gap-1">
+                        <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-400" aria-hidden="true" />
+                        Wave 1
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <span className="inline-block w-2.5 h-2.5 rounded-full bg-violet-400" aria-hidden="true" />
+                        Wave 2
+                      </span>
+                    </div>
                   </div>
+                  <p className="text-xs text-slate-400">Height of each wave in metres. ERA5 records, 1940 to now.</p>
                   <div className="space-y-3">
                     {baseline.historicalComparisonBars.map((row) => (
                       <div key={row.label} className="space-y-1 text-xs">
                         <div className="flex justify-between font-mono text-slate-300">
                           <span>{row.label}</span>
                           <span>
-                            W1 {row.wave1M} m · W2 {row.wave2M} m
+                            {row.wave1M} m · {row.wave2M} m
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
@@ -410,39 +392,32 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
               </div>
             </div>
 
-            {/* Nick Silksman 3-point Diagnostic + Verbatim Quote */}
+            {/* How unusual was it? */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-white">
-                Planetary Wave Diagnostics &amp; Historical Record
-              </h3>
+              <h3 className="text-lg font-semibold text-white">How unusual was it?</h3>
               <p className="text-sm text-slate-300">
                 <strong className="text-white">Nick Silksman</strong>, Deputy Chief Meteorologist at the Met Office,
-                conducted an analysis evaluating the uniqueness of this early-season event using ERA5 re-analysis data
-                dating back to the 1940s:
+                compared this event with ERA5 records going back to the 1940s:
               </p>
               <ol className="grid gap-3 md:grid-cols-3 text-sm text-slate-300">
                 <li className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
                   <span className="font-mono text-xs text-violet-300 font-semibold block mb-1">
-                    1. Wave 2 Dynamics (Late Oct – Nov 2)
+                    1. Wave 2 · late October to 2 November
                   </span>
-                  Atmospheric pressure rises and falls over thousands of miles pinched the polar vortex into a dumbbell
-                  shape, splitting it. This Wave 2 disturbance was significantly stronger than any early-season Wave 2
-                  event recorded since the 1940s.
+                  Rising and falling pressure across thousands of miles squeezed the vortex into a dumbbell and split
+                  it. It was the strongest early-season wave 2 in the record.
                 </li>
                 <li className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
                   <span className="font-mono text-xs text-rose-300 font-semibold block mb-1">
-                    2. Wave 1 Dynamics (Up to Nov 6)
+                    2. Wave 1 · up to 6 November
                   </span>
-                  A single prominent ridge originating over the Pacific and North America pushed eastwards, displacing the
-                  core of the polar vortex away from the North Pole toward Russia.
+                  One big ridge, starting over the Pacific and North America, pushed east and shoved the vortex off
+                  the pole towards Russia.
                 </li>
                 <li className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-                  <span className="font-mono text-xs text-sky-300 font-semibold block mb-1">
-                    3. Combined Impact
-                  </span>
-                  While individual Wave 1 events have been stronger in past records, the combined Wave 1 and Wave 2
-                  sequence is off the historical chart—surpassing strong El Niño benchmarks (with no direct correlation
-                  between El Niño and early SSW strength).
+                  <span className="font-mono text-xs text-sky-300 font-semibold block mb-1">3. Together</span>
+                  Stronger wave 1 events have happened before. But the two together are off the chart, beyond even
+                  strong El Niño years. (El Niño doesn’t reliably predict how strong an early SSW will be.)
                 </li>
               </ol>
 
@@ -455,40 +430,37 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
             </div>
           </section>
 
-          {/* 4. Downward Propagation & UK Winter Outlook */}
+          {/* 4. Into December */}
           <section id="briefing-outlook" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <Compass className="w-5 h-5 text-amber-400" />
-              <h2 className="text-2xl font-semibold text-white">
-                Downward Atmospheric Propagation &amp; UK Winter Outlook
-              </h2>
+              <Compass className="w-5 h-5 text-amber-400" aria-hidden="true" />
+              <h2 className="text-2xl font-semibold text-white">Into December: what it could mean for the UK</h2>
             </div>
 
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-lg font-semibold text-white">Downward Propagation Mechanism</h3>
+                <h3 className="text-lg font-semibold text-white">The drip down</h3>
                 <div className="flex items-center gap-3 text-xs font-mono">
                   <button
                     type="button"
                     onClick={() => onJumpBeat(4)}
                     className="text-sky-300 hover:text-sky-200 transition"
                   >
-                    Inspect Slice (Beat 4) →
+                    Watch the drip in 3D →
                   </button>
                   <button
                     type="button"
                     onClick={() => onJumpBeat(5)}
                     className="text-amber-300 hover:text-amber-200 transition"
                   >
-                    Inspect Blocking (Beat 5) →
+                    See the block in 3D →
                   </button>
                 </div>
               </div>
               <p className="text-sm leading-relaxed text-slate-300">
-                Analysis of zonal wind anomalies at <span className="font-mono text-sky-200">60°N</span> (latitude of
-                Shetland) across pressure levels from 10 hPa down to 1000 hPa (near surface) confirms that wind
-                deceleration signals are &ldquo;dripping down&rdquo; or &ldquo;oozing&rdquo; through lower atmospheric
-                layers.
+                Wind readings at <span className="font-mono text-sky-200">60°N</span>, the latitude of Shetland, from
+                30 km up to ground level show the slowdown working its way down, &ldquo;dripping&rdquo; or
+                &ldquo;oozing&rdquo; through the layers below.
               </p>
               <blockquote className="border-l-2 border-sky-400 pl-4 italic text-sm text-slate-300">
                 &ldquo;...what you can see is that those darker blues are sort of dripping down, oozing through the
@@ -499,134 +471,123 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">
-                Medium-to-Long-Range Outlook (Late November into December)
-              </h3>
+              <h3 className="text-lg font-semibold text-white">The outlook</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/65 p-5 space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-sky-300">
-                    Late November (Nov 23 onwards)
-                  </span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-sky-300">From 23 November</span>
                   <p className="text-sm leading-relaxed text-slate-300">
-                    Atmospheric pressure setups favor high pressure situated to the east (Scandinavia) and low pressure
-                    to the west. This alignment draws in milder southerly air for a period, though slight positional
-                    shifts could introduce cooler easterly flows.
+                    High pressure looks likely to the east, over Scandinavia, with low pressure to the west. That
+                    brings milder southerly winds for a while, though a small shift could swing in colder easterlies.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-amber-500/35 bg-slate-900/65 p-5 space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300">
-                    Early December
-                  </span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300">Early December</span>
                   <p className="text-sm leading-relaxed text-slate-300">
-                    Ensemble modeling indicates high pressure moving directly over or near the UK. This increases the
-                    probability of blocking patterns, easterly winds, and colder winter weather—a classic surface
-                    manifestation occurring 2 to 6 weeks following a stratospheric disruption.
+                    Forecast models suggest high pressure moving over or near the UK. That raises the chance of
+                    blocking, easterly winds and colder weather: the classic signal at the surface 2–6 weeks after a
+                    stratospheric shock.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-violet-500/35 bg-slate-900/65 p-5 space-y-2">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-violet-300">
-                    Potential Secondary SSW
+                    A second warming?
                   </span>
                   <p className="text-sm leading-relaxed text-slate-300">
-                    ECMWF zonal mean wind forecasts indicate the primary vortex winds are currently recovering to a weak
-                    westerly. However, a minority of ensemble members suggest a potential secondary weakening or reversal
-                    in late December.
+                    European (ECMWF) forecasts show the vortex winds recovering to a weak westerly. A minority of model
+                    runs suggest another weakening, or even a reversal, in late December.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* 5. Global Weather & Ecological Phenomena */}
+          {/* 5. Around the world */}
           <section id="briefing-global" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <Globe2 className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-2xl font-semibold text-white">Global Weather &amp; Ecological Phenomena</h2>
+              <Globe2 className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+              <h2 className="text-2xl font-semibold text-white">Also in this week’s Deep Dive</h2>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-3">
-              {/* Tropical Cyclones */}
+              {/* Tropical cyclones */}
               <div className="rounded-2xl border border-slate-800 bg-slate-900/65 p-5 space-y-3">
                 <div className="flex items-center gap-2 text-rose-300 font-semibold">
-                  <CloudRain className="w-4 h-4 shrink-0" />
-                  <h3>Tropical Cyclone Activity</h3>
+                  <CloudRain className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <h3>Tropical cyclones</h3>
                 </div>
                 <div className="space-y-3 text-sm text-slate-300">
                   <div>
-                    <strong className="text-white block">South Pacific Severe Tropical Cyclone</strong>
-                    Satellite imagery highlights a well-defined eye. The system remains offshore to the northeast of Fiji
-                    and Samoa, posing no direct landfall threat.
+                    <strong className="text-white block">A severe cyclone in the South Pacific</strong>
+                    Satellite pictures show a clear eye. It’s staying out at sea, north-east of Fiji and Samoa, with no
+                    landfall expected.
                   </div>
                   <div className="pt-2 border-t border-slate-800 space-y-1.5">
-                    <strong className="text-white block">Cyclonic Storm Akvan (Bay of Bengal)</strong>
-                    Moving northwards toward eastern/northeast India and Bangladesh, with landfall expected late
-                    Thursday into Friday.
+                    <strong className="text-white block">Cyclonic Storm Akvan, Bay of Bengal</strong>
+                    Heading north towards eastern India and Bangladesh, due to make landfall late Thursday into Friday.
                     <ul className="list-disc list-inside text-xs text-slate-400 space-y-1 pt-1">
                       <li>
-                        <strong className="text-slate-200">Expected Impacts:</strong> 150–250 mm rainfall, severe coastal
-                        storm surge, high winds.
+                        <strong className="text-slate-200">Expected:</strong> 150–250 mm of rain, a dangerous storm
+                        surge and strong winds.
                       </li>
                       <li>
-                        <strong className="text-slate-200">Environmental Vulnerability:</strong> Third cyclone in under
-                        a month striking saturated ground in a normally dry post-monsoon period.
+                        <strong className="text-slate-200">Why it’s worse:</strong> the third cyclone in under a month,
+                        hitting saturated ground in what’s normally a dry season.
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
 
-              {/* Christmas Island Crabs */}
+              {/* Christmas Island crabs */}
               <div className="rounded-2xl border border-slate-800 bg-slate-900/65 p-5 space-y-3">
                 <div className="flex items-center gap-2 text-amber-300 font-semibold">
-                  <Sparkles className="w-4 h-4 shrink-0" />
-                  <h3>Christmas Island Red Crab Migration</h3>
+                  <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <h3>Christmas Island’s red crabs</h3>
                 </div>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Tens of millions of red crabs on Australia&apos;s Christmas Island have initiated their annual migration
-                  from forest habitats to the ocean to breed.
+                  Tens of millions of red crabs on Australia’s Christmas Island have started their yearly march from
+                  the forest to the sea to breed.
                 </p>
                 <ul className="space-y-2 text-xs text-slate-300 pt-1">
                   <li className="rounded-lg bg-slate-950/70 border border-slate-800 p-3">
-                    <strong className="text-sky-300 block mb-0.5">Weather Trigger</strong>
-                    The migration is directly triggered by the arrival of the first seasonal rains.
+                    <strong className="text-sky-300 block mb-0.5">What sets them off</strong>
+                    The first rains of the wet season.
                   </li>
                   <li className="rounded-lg bg-slate-950/70 border border-slate-800 p-3">
-                    <strong className="text-emerald-300 block mb-0.5">Conservation Measures</strong>
-                    National park rangers spend months preparing infrastructure, including constructing dedicated bridges
-                    and enforcing road closures to ensure safe passage.
+                    <strong className="text-emerald-300 block mb-0.5">Helping them across</strong>
+                    Rangers spend months preparing, building crab bridges and closing roads.
                   </li>
                 </ul>
               </div>
 
-              {/* Leonid Meteor Shower */}
+              {/* Leonids */}
               <div className="rounded-2xl border border-slate-800 bg-slate-900/65 p-5 space-y-3">
                 <div className="flex items-center gap-2 text-indigo-300 font-semibold">
-                  <Eye className="w-4 h-4 shrink-0" />
-                  <h3>Astronomical Forecast: Leonid Meteor Shower</h3>
+                  <Eye className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <h3>The Leonid meteor shower</h3>
                 </div>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  The annual Leonid meteor shower reached its peak on the night of November 17, though activity continues
-                  through November 30.
+                  The Leonids peaked on the night of 17 November but carry on until 30 November.
                 </p>
                 <div className="space-y-2 text-xs text-slate-300">
                   <div>
-                    <strong className="text-white">Origin:</strong> Dust particles from comet{' '}
+                    <strong className="text-white">Where they come from:</strong> dust from comet{' '}
                     <span className="font-mono text-indigo-200">55P/Tempel-Tuttle</span>.
                   </div>
                   <div>
-                    <strong className="text-white">Peak Activity:</strong> 10 to 15 meteors/hr, best viewed between
-                    midnight and early morning away from artificial light.
+                    <strong className="text-white">How many:</strong> 10 to 15 an hour at the peak. Look after midnight,
+                    away from street lights.
                   </div>
                   <div className="rounded-lg bg-slate-950/70 border border-slate-800 p-3 space-y-1.5">
-                    <strong className="text-white block">UK Viewing Conditions</strong>
+                    <strong className="text-white block">Can we see them from the UK?</strong>
                     <p className="text-slate-400">
-                      <strong className="text-slate-200">Peak Night (Nov 17):</strong> Unfavorable under thick cloud and
-                      rain across Scotland, Northern England, and Northern Ireland; limited breaks over Wales, SW England,
+                      <strong className="text-slate-200">Peak night (17 Nov):</strong> mostly not. Thick cloud and rain
+                      over Scotland, northern England and Northern Ireland; a few breaks over Wales, south-west England
                       and the Republic of Ireland.
                     </p>
                     <p className="text-slate-400">
-                      <strong className="text-slate-200">Subsequent Days:</strong> Cloud persists through Thursday; best
-                      viewing Friday night into Saturday under clear, cold, frosty northern skies.
+                      <strong className="text-slate-200">After that:</strong> cloudy until Thursday. Friday night into
+                      Saturday is the best bet, with clear, cold, frosty skies in the north.
                     </p>
                   </div>
                 </div>
@@ -634,11 +595,11 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
             </div>
           </section>
 
-          {/* 6. Dedicated Key Insights & Verbatim Quotes */}
+          {/* 6. In their words */}
           <section id="briefing-quotes" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <Quote className="w-5 h-5 text-sky-400" />
-              <h2 className="text-2xl font-semibold text-white">Dedicated Key Insights &amp; Verbatim Quotes</h2>
+              <Quote className="w-5 h-5 text-sky-400" aria-hidden="true" />
+              <h2 className="text-2xl font-semibold text-white">In their words</h2>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -648,12 +609,8 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
                   className="rounded-2xl border border-slate-800 bg-slate-900/65 p-5 flex flex-col justify-between space-y-3"
                 >
                   <div>
-                    <div className="text-[11px] font-mono uppercase tracking-wider text-sky-300 mb-2">
-                      {q.topic}
-                    </div>
-                    <blockquote className="text-sm italic leading-relaxed text-slate-200">
-                      &ldquo;{q.quote}&rdquo;
-                    </blockquote>
+                    <div className="text-[11px] font-mono uppercase tracking-wider text-sky-300 mb-2">{q.topic}</div>
+                    <blockquote className="text-sm italic leading-relaxed text-slate-200">&ldquo;{q.quote}&rdquo;</blockquote>
                   </div>
                   <figcaption className="pt-2 border-t border-slate-800/80 text-xs text-slate-400">
                     <strong className="text-white font-mono">— {q.author}</strong>, {q.context}
@@ -663,25 +620,18 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
             </div>
           </section>
 
-          {/* 7. Operational Notes & Footer */}
+          {/* Sources */}
           <footer className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-2 text-xs text-slate-300">
-              <div className="text-[10px] font-mono uppercase tracking-widest text-slate-400">
-                Operational Notes &amp; Viewer Submissions
-              </div>
-              <div className="flex flex-wrap items-center gap-4">
-                <a
-                  href="mailto:weatherpix@metoffice.gov.uk"
-                  className="inline-flex items-center gap-1.5 text-sky-300 hover:text-sky-200 transition font-mono"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  weatherpix@metoffice.gov.uk
-                </a>
-                <span className="inline-flex items-center gap-1.5 text-slate-300">
-                  <Youtube className="w-3.5 h-3.5 text-rose-400" />
-                  Met Office YouTube: 450,000+ subscribers (targeting 500,000 by Christmas)
-                </span>
-              </div>
+            <div className="space-y-2 text-xs text-slate-300 max-w-2xl">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Sources</div>
+              <p>
+                Based on the Met Office’s weekly Deep Dive of 17 November 2026, presented by Alex Burkill. Quotes are
+                from that video.
+              </p>
+              <p>
+                Live readings from Open-Meteo. Historical comparisons from the ERA5 reanalysis (Copernicus / ECMWF).
+              </p>
+              <p className="text-slate-400">This is an independent explainer, not a Met Office product.</p>
             </div>
 
             <button
@@ -689,8 +639,8 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
               onClick={() => onJumpBeat(1)}
               className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/15 hover:bg-sky-500/25 px-4 py-2 text-xs font-mono text-sky-200 transition"
             >
-              <ArrowUp className="w-3.5 h-3.5" />
-              Back to Top · 3D Globe
+              <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
+              Back to the globe
             </button>
           </footer>
         </div>
@@ -698,4 +648,3 @@ export function BriefingEditorial({ snapshot, onJumpBeat }: BriefingEditorialPro
     </section>
   );
 }
-

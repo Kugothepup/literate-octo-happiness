@@ -7,11 +7,13 @@ import { TopHud } from './components/TopHud';
 import { AltitudeGauge } from './components/AltitudeGauge';
 import { ScrollStory } from './components/ScrollStory';
 import { BriefingEditorial } from './components/BriefingEditorial';
+import { IntroHero } from './components/IntroHero';
 
 export default function App() {
   const storyRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [inEditorial, setInEditorial] = useState(false);
+  const [inIntro, setInIntro] = useState(true);
   const [mode, setMode] = useState<WeatherMode>('case-study');
   const [modelSource, setModelSource] = useState<ModelSource>('glb');
   const [snapshot, setSnapshot] = useState<AtmosphereSnapshot>(() => getCaseStudySnapshot());
@@ -47,6 +49,7 @@ export default function App() {
         const next = Math.min(1, Math.max(0, -rect.top / storyScrollable));
         setScrollProgress(next);
         setInEditorial(rect.bottom <= window.innerHeight * 0.65);
+        setInIntro(rect.top > window.innerHeight * 0.35);
       }
     };
 
@@ -101,16 +104,18 @@ export default function App() {
         activeBeat={activeBeat}
         modelSource={modelSource}
         snapshot={snapshot}
-        showTooltips={!inEditorial}
+        showTooltips={!inEditorial && !inIntro}
       />
 
       <AltitudeGauge
         scrollProgress={scrollProgress}
         activeBeat={activeBeat}
-        hidden={inEditorial}
+        hidden={inEditorial || inIntro}
         onJumpBeat={handleJumpBeat}
         onJumpEditorial={handleJumpEditorial}
       />
+
+      <IntroHero onStart={() => handleJumpBeat(1)} onSkipToBriefing={handleJumpEditorial} />
 
       <div ref={storyRef}>
         <ScrollStory

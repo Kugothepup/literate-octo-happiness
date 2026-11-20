@@ -11,6 +11,11 @@ interface TooltipOverlay3DProps {
   snapshot: AtmosphereSnapshot;
 }
 
+const COMPASS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+function compassFrom(deg: number): string {
+  return COMPASS[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+}
+
 function AnchorDot({ colorClass }: { colorClass: string }) {
   return (
     <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -32,6 +37,11 @@ export function TooltipOverlay3D({
   const s60 = snapshot.stratosphere60N;
   const isThermalReversal = s60.poleTo60NGradientC > 0;
   const isCold850 = snapshot.ukSurface.temp850HpaC <= -5;
+  // How many times bigger than a typical November the two waves are, on average.
+  const waveRatio =
+    (snapshot.waves.wave1HeightAmpM / snapshot.waves.era5NovClimWave1M +
+      snapshot.waves.wave2HeightAmpM / snapshot.waves.era5NovClimWave2M) /
+    2;
 
   return (
     <group>
@@ -47,7 +57,7 @@ export function TooltipOverlay3D({
               <AnchorDot colorClass="bg-amber-400" />
               <div className="w-64 rounded-xl border border-slate-700/80 bg-slate-950/88 backdrop-blur-md p-3 shadow-2xl text-slate-100">
                 <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-amber-300">
-                  <span>UK Highlands · 56.8°N</span>
+                  <span>Scottish Highlands</span>
                   <span>1000 hPa</span>
                 </div>
                 <div className="mt-1 flex items-baseline justify-between gap-2">
@@ -66,30 +76,30 @@ export function TooltipOverlay3D({
 
                 <div className="mt-2 grid grid-cols-3 gap-1.5 rounded-lg bg-slate-900/85 border border-slate-800 px-2 py-1.5 text-[10px] font-mono">
                   <div>
-                    <span className="block text-[9px] text-slate-400">10M WIND</span>
+                    <span className="block text-[9px] text-slate-400">WIND · GUST</span>
                     <span className="text-slate-100">
-                      {snapshot.ukSurface.windSpeed10mMs.toFixed(0)}g{snapshot.ukSurface.windGusts10mMs.toFixed(0)} m/s
+                      {snapshot.ukSurface.windSpeed10mMs.toFixed(0)} · {snapshot.ukSurface.windGusts10mMs.toFixed(0)} m/s
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[9px] text-slate-400">850 HPA</span>
+                    <span className="block text-[9px] text-slate-400">1.5 KM UP</span>
                     <span className={isCold850 ? 'text-sky-300 font-semibold' : 'text-slate-100'}>
                       {snapshot.ukSurface.temp850HpaC.toFixed(1)}°C
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[9px] text-slate-400">FREEZE LVL</span>
+                    <span className="block text-[9px] text-slate-400">FREEZING AT</span>
                     <span className="text-slate-100">{snapshot.ukSurface.freezingLevelM} m</span>
                   </div>
                 </div>
 
                 <p className="mt-1.5 text-[10.5px] leading-snug text-slate-300">
-                  Arctic outbreaks across Scottish glens plunge to{' '}
+                  Mid-November lows in the glens, seen and forecast:{' '}
                   <span className="text-sky-300 font-medium">
                     {snapshot.ukSurface.scotlandColdSnapRange}
                   </span>
                   {snapshot.ukSurface.snowfallCmHr > 0
-                    ? ` · ${snapshot.ukSurface.snowfallCmHr} cm/hr snow.`
+                    ? `. Snow falling now: ${snapshot.ukSurface.snowfallCmHr} cm an hour.`
                     : '.'}
                 </p>
               </div>
@@ -105,17 +115,18 @@ export function TooltipOverlay3D({
               <AnchorDot colorClass="bg-sky-400" />
               <div className="w-52 rounded-xl border border-sky-500/40 bg-slate-950/88 backdrop-blur-md p-2.5 shadow-2xl text-slate-100">
                 <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-sky-300">
-                  <span>Jet Stream Axis</span>
+                  <span>Jet stream</span>
                   <span>250 hPa</span>
                 </div>
                 <div className="mt-1 text-base font-semibold font-mono text-white">
                   {snapshot.ukSurface.jetSpeed250HpaMs.toFixed(1)} m/s
-                  <span className="ml-1.5 text-xs font-normal text-slate-400">
-                    ({snapshot.ukSurface.jetDirection250HpaDeg}°)
-                  </span>
+                </div>
+                <div className="text-[10px] font-mono text-slate-400">
+                  {Math.round(snapshot.ukSurface.jetSpeed250HpaMs * 2.23694)} mph · from the{' '}
+                  {compassFrom(snapshot.ukSurface.jetDirection250HpaDeg)}
                 </div>
                 <p className="mt-1 text-[10.5px] text-slate-300">
-                  Running south of the UK, steering Atlantic moisture beneath colder polar air.
+                  Running south of the UK, steering wet Atlantic weather under the colder air to the north.
                 </p>
               </div>
             </div>
@@ -130,12 +141,12 @@ export function TooltipOverlay3D({
           className="pointer-events-none select-none"
           style={{ pointerEvents: 'none' }}
         >
-          <div className="flex items-start gap-2 translate-x-3 -translate-y-8">
+          <div className="flex items-end gap-2 translate-x-3 -translate-y-full">
             <AnchorDot colorClass={s60.isReversed ? 'bg-rose-400' : 'bg-sky-400'} />
             <div className="w-72 rounded-xl border border-indigo-400/45 bg-slate-950/90 backdrop-blur-md p-3 shadow-2xl text-slate-100 space-y-2">
               <div>
                 <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-indigo-300">
-                  <span>60°N Zonal Mean (Shetland)</span>
+                  <span>Vortex wind · 60°N</span>
                   <span>10 hPa</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between">
@@ -150,7 +161,7 @@ export function TooltipOverlay3D({
                         : 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
                     }`}
                   >
-                    {s60.isReversed ? 'EASTERLY SSW' : 'WESTERLY VORTEX'}
+                    {s60.isReversed ? 'REVERSED: SSW' : 'SPINNING WESTERLY'}
                   </span>
                 </div>
                 <div className="mt-1">
@@ -161,7 +172,7 @@ export function TooltipOverlay3D({
               {/* Stratospheric Thermal & Apparent-Cold Context */}
               <div className="pt-2 border-t border-slate-800/90">
                 <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-orange-300">
-                  <span>Polar Cap 10 hPa Thermal</span>
+                  <span>Temperature 30 km up</span>
                   <span
                     className={`px-1 py-0.5 rounded text-[9px] ${
                       isThermalReversal
@@ -169,23 +180,23 @@ export function TooltipOverlay3D({
                         : 'bg-slate-800 text-slate-300'
                     }`}
                   >
-                    {isThermalReversal ? 'THERMAL REVERSAL' : `ΔT ${s60.polarCapTempAnomalyC >= 0 ? '+' : ''}${s60.polarCapTempAnomalyC.toFixed(1)}°C`}
+                    {isThermalReversal ? 'POLE WARMER THAN 60°N' : `${s60.polarCapTempAnomalyC >= 0 ? '+' : ''}${s60.polarCapTempAnomalyC.toFixed(1)}°C VS NORMAL`}
                   </span>
                 </div>
 
                 <div className="mt-1 grid grid-cols-3 gap-1.5 text-[10px] font-mono">
                   <div className="rounded bg-slate-900/90 px-1.5 py-1">
-                    <span className="block text-[8.5px] text-slate-400">POLE 89°N</span>
+                    <span className="block text-[8.5px] text-slate-400">NORTH POLE</span>
                     <span className="text-orange-300 font-semibold">
                       {s60.polarCapTemp10HpaC.toFixed(1)}°C
                     </span>
                   </div>
                   <div className="rounded bg-slate-900/90 px-1.5 py-1">
-                    <span className="block text-[8.5px] text-slate-400">60°N RING</span>
+                    <span className="block text-[8.5px] text-slate-400">AT 60°N</span>
                     <span className="text-sky-300 font-semibold">{s60.temp10HpaC.toFixed(1)}°C</span>
                   </div>
                   <div className="rounded bg-slate-900/90 px-1.5 py-1">
-                    <span className="block text-[8.5px] text-slate-400">POLE−60°N</span>
+                    <span className="block text-[8.5px] text-slate-400">DIFFERENCE</span>
                     <span className={isThermalReversal ? 'text-rose-300 font-semibold' : 'text-slate-200'}>
                       {s60.poleTo60NGradientC >= 0 ? '+' : ''}
                       {s60.poleTo60NGradientC.toFixed(1)}°C
@@ -216,14 +227,14 @@ export function TooltipOverlay3D({
             <AnchorDot colorClass="bg-violet-400" />
             <div className="w-64 rounded-xl border border-violet-400/45 bg-slate-950/90 backdrop-blur-md p-3 shadow-2xl text-slate-100">
               <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-violet-300">
-                <span>{wave2Dominant ? 'Phase 1: Wave 2 Pinch' : 'Phase 2: Wave 1 Displaced'}</span>
-                <span>ERA5 {snapshot.waves.historicPercentileEarlyNov}th pct</span>
+                <span>{wave2Dominant ? 'First: the squeeze' : 'Then: the shove'}</span>
+                <span>{waveRatio.toFixed(1)}× typical size</span>
               </div>
 
               <div className="mt-2 space-y-2 text-[11px]">
                 <div>
                   <div className="flex justify-between font-mono text-slate-200">
-                    <span>Wave 1 (Displaces → Russia)</span>
+                    <span>Wave 1 · the shove</span>
                     <span>{snapshot.waves.wave1HeightAmpM} m</span>
                   </div>
                   <div className="mt-1 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
@@ -233,13 +244,13 @@ export function TooltipOverlay3D({
                     />
                   </div>
                   <span className="text-[9px] text-slate-400 font-mono">
-                    Nov ERA5 Clim: {snapshot.waves.era5NovClimWave1M} m
+                    Typical November: {snapshot.waves.era5NovClimWave1M} m
                   </span>
                 </div>
 
                 <div>
                   <div className="flex justify-between font-mono text-slate-200">
-                    <span>Wave 2 (Dumbbell Pinch)</span>
+                    <span>Wave 2 · the squeeze</span>
                     <span>{snapshot.waves.wave2HeightAmpM} m</span>
                   </div>
                   <div className="mt-1 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
@@ -249,7 +260,7 @@ export function TooltipOverlay3D({
                     />
                   </div>
                   <span className="text-[9px] text-slate-400 font-mono">
-                    Nov ERA5 Clim: {snapshot.waves.era5NovClimWave2M} m
+                    Typical November: {snapshot.waves.era5NovClimWave2M} m
                   </span>
                 </div>
               </div>
@@ -269,12 +280,12 @@ export function TooltipOverlay3D({
             <AnchorDot colorClass="bg-sky-400" />
             <div className="w-72 rounded-xl border border-sky-400/45 bg-slate-950/90 backdrop-blur-md p-3 shadow-2xl text-slate-100">
               <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-sky-300">
-                <span>60°N Vertical Coupling</span>
-                <span>Lag: 2–6 Wks</span>
+                <span>Wind change by height · 60°N</span>
+                <span>2–6 weeks</span>
               </div>
               <div className="mt-1 mb-1.5 flex items-center justify-between text-[9.5px] font-mono text-slate-400">
-                <span>Zonal Anomaly Δu (m/s)</span>
-                <span>Layer Temp (°C)</span>
+                <span>Wind vs normal (m/s)</span>
+                <span>Temp (°C)</span>
               </div>
               <VerticalProfileChart levels={snapshot.verticalProfile} />
             </div>
@@ -293,12 +304,12 @@ export function TooltipOverlay3D({
             <AnchorDot colorClass="bg-amber-400" />
             <div className="w-72 rounded-xl border border-amber-400/45 bg-slate-950/90 backdrop-blur-md p-3 shadow-2xl text-slate-100">
               <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-amber-300">
-                <span>Surface Battleground</span>
-                <span>MSLP · °C · Feels</span>
+                <span>The battleground</span>
+                <span>Pressure · temp</span>
               </div>
               <div className="mt-2 grid grid-cols-3 gap-1.5 text-center font-mono">
                 <div className="rounded-lg bg-slate-900/90 border border-sky-500/30 p-1.5">
-                  <div className="text-[9px] text-sky-300">ATL LOW</div>
+                  <div className="text-[9px] text-sky-300">ATLANTIC</div>
                   <div className="text-xs font-semibold text-white">
                     {Math.round(snapshot.atlanticLow.pressureMslHpa)} hPa
                   </div>
@@ -322,7 +333,7 @@ export function TooltipOverlay3D({
                   </div>
                 </div>
                 <div className="rounded-lg bg-slate-900/90 border border-amber-500/40 p-1.5">
-                  <div className="text-[9px] text-amber-300">SCANDI HI</div>
+                  <div className="text-[9px] text-amber-300">SCANDINAVIA</div>
                   <div className="text-xs font-semibold text-amber-200">
                     {Math.round(snapshot.scandiHigh.pressureMslHpa)} hPa
                   </div>

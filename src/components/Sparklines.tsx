@@ -137,10 +137,21 @@ interface VerticalProfileChartProps {
 }
 
 export function VerticalProfileChart({ levels }: VerticalProfileChartProps) {
-  const maxAbs = Math.max(30, ...levels.map((l) => Math.abs(l.anomalyMs)));
+  const maxAbs = Math.max(30, ...levels.filter((l) => !l.noData).map((l) => Math.abs(l.anomalyMs)));
   return (
     <div className="space-y-1">
       {levels.map((lvl) => {
+        if (lvl.noData) {
+          return (
+            <div
+              key={lvl.pressureHpa}
+              className="grid grid-cols-[44px_1fr] items-center gap-1.5 text-[10px]"
+            >
+              <span className="font-mono text-slate-500 text-right">{lvl.pressureHpa} hPa</span>
+              <span className="font-mono text-slate-500">No live data at this height</span>
+            </div>
+          );
+        }
         const pct = Math.min(100, (Math.abs(lvl.anomalyMs) / maxAbs) * 100);
         const isWeakened = lvl.anomalyMs < 0;
         return (

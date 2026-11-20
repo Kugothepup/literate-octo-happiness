@@ -286,7 +286,10 @@ export async function fetchLiveAtmosphere(forceRefresh = false): Promise<Atmosph
       let tSum = 0;
       let dirX = 0;
       let dirY = 0;
+      let liveSamples = 0;
       for (let k = 0; k < ringList.length; k++) {
+        const rawWs = ringList[k]?.hourly?.[`wind_speed_${meta.hpa}hPa`]?.[ringNowIdx];
+        if (typeof rawWs === 'number' && Number.isFinite(rawWs)) liveSamples++;
         const ws = readHourlyAt(ringList[k], `wind_speed_${meta.hpa}hPa`, ringNowIdx, Math.abs(meta.climU));
         const wd = readHourlyAt(ringList[k], `wind_direction_${meta.hpa}hPa`, ringNowIdx, 265);
         const tc = readHourlyAt(ringList[k], `temperature_${meta.hpa}hPa`, ringNowIdx, meta.fbTempC);
@@ -310,22 +313,23 @@ export async function fetchLiveAtmosphere(forceRefresh = false): Promise<Atmosph
         climatologyUMs: meta.climU,
         anomalyMs: Number((meanU - meta.climU).toFixed(1)),
         tempC: Number(meanT.toFixed(1)),
+        noData: liveSamples === 0,
       };
     });
 
     const pressureDiff = scandiMslp - atlanticMslp;
     const battlegroundSummary =
       scandiMslp >= 1022
-        ? `Scandinavian High (${Math.round(scandiMslp)} hPa) builds against Atlantic Low (${Math.round(atlanticMslp)} hPa), steering cold continental air near the UK.`
+        ? `High pressure over Scandinavia (${Math.round(scandiMslp)} hPa) is holding back the Atlantic low (${Math.round(atlanticMslp)} hPa). That can steer cold continental air towards the UK.`
         : pressureDiff > 15
-          ? `Ridging toward Scandinavia (${Math.round(scandiMslp)} hPa) battles deeper Atlantic lows (${Math.round(atlanticMslp)} hPa) across the UK.`
-          : `Active Atlantic westerlies dominate (${Math.round(atlanticMslp)} hPa west vs ${Math.round(scandiMslp)} hPa east), keeping the jet progressive near the UK.`;
+          ? `Pressure is rising towards Scandinavia (${Math.round(scandiMslp)} hPa) against deeper Atlantic lows (${Math.round(atlanticMslp)} hPa), with the UK caught between.`
+          : `No block today. Atlantic weather is in charge (${Math.round(atlanticMslp)} hPa west, ${Math.round(scandiMslp)} hPa east), keeping the UK changeable.`;
 
-    const anomSigned = `${polarAnomC >= 0 ? '+' : ''}${polarAnomC.toFixed(1)}°C`;
+    const anomAbs = Math.abs(polarAnomC).toFixed(1);
+    const anomWord = polarAnomC >= 0 ? 'warmer' : 'colder';
     const stratThermalFeelNote =
-      polarAnomC >= 12
-        ? `Actual 30 km temp ${polarCapTemp10.toFixed(1)}°C (${anomSigned} vs ERA5). Air density is ~1% of sea level—no surface wind-chill equivalent, yet rapid polar warming disrupts the vortex.`
-        : `Actual 30 km temp ${polarCapTemp10.toFixed(1)}°C (${anomSigned} vs ERA5). Near ~1% sea-level density, standard wind chill does not apply in the cold polar vortex core.`;
+      `Over the pole, 30 km up: ${polarCapTemp10.toFixed(1)}°C, ${anomAbs}°C ${anomWord} than a typical November.` +
+      (polarAnomC >= 12 ? ' A jump like that is the signature of a sudden warming.' : '');
 
     const snapshot: AtmosphereSnapshot = {
       mode: 'live',

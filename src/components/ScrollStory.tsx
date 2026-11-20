@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react';
+import baseline from '../data/historicalBaseline.json';
 import { BEAT_DESCRIPTORS } from '../scene/cameraWaypoints';
 import type { AtmosphereSnapshot, BeatId } from '../types/weather';
 
@@ -9,17 +10,59 @@ interface ScrollStoryProps {
   onReadBriefing?: () => void;
 }
 
+const MS_TO_MPH = 2.23694;
+const CLIM = baseline.novemberClimatology;
+
+function signed(n: number, digits = 1): string {
+  return `${n > 0 ? '+' : ''}${n.toFixed(digits)}`;
+}
+
+/** One plain-English line on what today's vortex wind means. */
+function vortexReading(windMs: number, isReversed: boolean): string {
+  if (isReversed) return 'Reversed: blowing from the east. That’s SSW territory.';
+  if (windMs < CLIM.zonalMeanWind10HpaMs) {
+    return `Westerly, but weaker than a typical November (${Math.round(CLIM.zonalMeanWind10HpaMs)} m/s).`;
+  }
+  return `Westerly and spinning at least as fast as a typical November (${Math.round(CLIM.zonalMeanWind10HpaMs)} m/s).`;
+}
+
+/** One plain-English line on whether a Scandinavian block is in place. */
+function battlegroundReading(scandiHpa: number, ukHpa: number): string {
+  if (scandiHpa >= 1022 && scandiHpa > ukHpa) return 'High pressure over Scandinavia: a block is in place.';
+  if (scandiHpa > ukHpa) return 'Pressure is higher to the east than over the UK.';
+  return 'No Scandinavian high today. The dome on the globe shows what one would look like.';
+}
+
+/** One plain-English line on what the freezing level means on the ground. */
+function freezingReading(levelM: number): string {
+  if (levelM <= 50) return 'Freezing right down to ground level.';
+  return `Freezing level ${Math.round(levelM)} m: hills higher than that are in sub-zero air.`;
+}
+
+/** How much of the atmosphere at 60°N has slower-than-normal westerlies right now. */
+function dripReading(levels: AtmosphereSnapshot['verticalProfile']): string {
+  const measured = levels.filter((l) => !l.noData);
+  if (measured.length === 0) return 'No wind readings available by height.';
+  const weaker = measured.filter((l) => l.anomalyMs < 0).length;
+  return `Winds are weaker than normal at ${weaker} of ${measured.length} heights measured.`;
+}
+
 export function ScrollStory({ activeBeat, snapshot, onJumpBeat, onReadBriefing }: ScrollStoryProps) {
   const validLabel = new Date(snapshot.validTimeIso).toUTCString().slice(5, 22);
+  const isLive = snapshot.fetchSource === 'live-api' || snapshot.fetchSource === 'cached-live';
+  const dataLabel = isLive ? 'Live now' : 'November case study';
+  const s60 = snapshot.stratosphere60N;
 
   return (
     <main className="relative z-10 pointer-events-none">
       {BEAT_DESCRIPTORS.map((beat, idx) => {
         const isCurrent = activeBeat === beat.id;
+        const next = BEAT_DESCRIPTORS[idx + 1];
         return (
           <section
             key={beat.id}
             id={`beat-${beat.id}`}
+            aria-labelledby={`beat-${beat.id}-title`}
             className="min-h-screen flex items-end md:items-center px-4 sm:px-8 pb-10 pt-24 md:py-24"
           >
             <article
@@ -31,12 +74,15 @@ export function ScrollStory({ activeBeat, snapshot, onJumpBeat, onReadBriefing }
             >
               <div className="flex items-center justify-between gap-2 text-[10px] font-mono tracking-widest uppercase text-sky-300">
                 <span>{beat.kicker}</span>
-                <span className="rounded-md bg-slate-900 px-2 py-0.5 border border-slate-700/80 text-slate-300">
+                <span className="rounded-md bg-slate-900 px-2 py-0.5 border border-slate-700/80 text-slate-300 normal-case tracking-normal">
                   {beat.pressureLabel}
                 </span>
               </div>
 
-              <h2 className="mt-2.5 text-xl sm:text-2xl font-semibold tracking-tight text-white">
+              <h2
+                id={`beat-${beat.id}-title`}
+                className="mt-2.5 text-xl sm:text-2xl font-semibold tracking-tight text-white"
+              >
                 {beat.title}
               </h2>
               <p className="mt-0.5 text-xs font-medium text-sky-200/80">{beat.subtitle}</p>
@@ -45,87 +91,88 @@ export function ScrollStory({ activeBeat, snapshot, onJumpBeat, onReadBriefing }
 
               <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/75 px-3.5 py-2.5 text-xs text-slate-200">
                 <span className="font-mono text-[10px] uppercase tracking-wider text-amber-300 block mb-0.5">
-                  Key Signal
+                  Why it matters
                 </span>
                 {beat.takeaway}
               </div>
 
-              {/* Quick Beat-specific live readout badge */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-800/80 text-[11px] font-mono text-slate-400">
+              {/* What the data says for this beat, live or case study */}
+              <div className="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-0.5">
+                <span className="block font-mono text-[9.5px] uppercase tracking-wider text-slate-500">
+                  {dataLabel}
+                </span>
                 {beat.id === 1 && (
-                  <span>
-                    UK: <strong className="text-white">{snapshot.ukSurface.tempC.toFixed(1)}°C</strong> (feels{' '}
-                    <strong className="text-sky-300">{snapshot.ukSurface.feelsLikeC.toFixed(1)}°C</strong>) · 850hPa:{' '}
-                    <strong className="text-slate-200">{snapshot.ukSurface.temp850HpaC.toFixed(1)}°C</strong>
-                  </span>
+                  <p className="font-mono">
+                    Scottish Highlands:{' '}
+                    <strong className="text-white">{snapshot.ukSurface.tempC.toFixed(1)}°C</strong>, feels like{' '}
+                    <strong className="text-sky-300">{snapshot.ukSurface.feelsLikeC.toFixed(1)}°C</strong>
+                  </p>
                 )}
                 {beat.id === 2 && (
-                  <span>
-                    60°N u10:{' '}
-                    <strong
-                      className={
-                        snapshot.stratosphere60N.isReversed ? 'text-rose-300' : 'text-sky-300'
-                      }
-                    >
-                      {snapshot.stratosphere60N.zonalMeanWindMs} m/s
-                    </strong>{' '}
-                    · Pole ΔT:{' '}
-                    <strong className="text-orange-300">
-                      {snapshot.stratosphere60N.polarCapTempAnomalyC >= 0 ? '+' : ''}
-                      {snapshot.stratosphere60N.polarCapTempAnomalyC.toFixed(1)}°C
-                    </strong>
-                  </span>
+                  <>
+                    <p className="font-mono">
+                      Vortex wind at 60°N:{' '}
+                      <strong className={s60.isReversed ? 'text-rose-300' : 'text-sky-300'}>
+                        {signed(s60.zonalMeanWindMs)} m/s
+                      </strong>{' '}
+                      <span className="text-slate-500">({Math.round(Math.abs(s60.zonalMeanWindMs) * MS_TO_MPH)} mph)</span>
+                    </p>
+                    <p>{vortexReading(s60.zonalMeanWindMs, s60.isReversed)}</p>
+                  </>
                 )}
                 {beat.id === 3 && (
-                  <span>
-                    Wave 1: <strong className="text-rose-300">{snapshot.waves.wave1HeightAmpM} m</strong> ·
-                    Wave 2: <strong className="text-violet-300">{snapshot.waves.wave2HeightAmpM} m</strong>
-                  </span>
+                  <>
+                    <p className="font-mono">
+                      Wave 1: <strong className="text-rose-300">{snapshot.waves.wave1HeightAmpM} m</strong> · Wave 2:{' '}
+                      <strong className="text-violet-300">{snapshot.waves.wave2HeightAmpM} m</strong>
+                    </p>
+                    <p>
+                      A typical November: {CLIM.wave1GeopotentialAmpM} m and {CLIM.wave2GeopotentialAmpM} m.
+                    </p>
+                  </>
                 )}
-                {beat.id === 4 && (
-                  <span>
-                    10→1000 hPa Coupling Lag: <strong className="text-sky-300">2–6 weeks</strong>
-                  </span>
-                )}
+                {beat.id === 4 && <p>{dripReading(snapshot.verticalProfile)}</p>}
                 {beat.id === 5 && (
-                  <span>
-                    Scandi:{' '}
-                    <strong className="text-amber-300">
-                      {Math.round(snapshot.scandiHigh.pressureMslHpa)} hPa
-                    </strong>{' '}
-                    ({snapshot.scandiHigh.feelsLikeC.toFixed(0)}° feels) vs UK{' '}
-                    <strong className="text-sky-300">{snapshot.ukSurface.feelsLikeC.toFixed(0)}° feels</strong>
-                  </span>
+                  <>
+                    <p className="font-mono">
+                      Scandinavia:{' '}
+                      <strong className="text-amber-300">{Math.round(snapshot.scandiHigh.pressureMslHpa)} hPa</strong> ·
+                      UK: <strong className="text-sky-300">{Math.round(snapshot.ukSurface.pressureMslHpa)} hPa</strong>
+                    </p>
+                    <p>{battlegroundReading(snapshot.scandiHigh.pressureMslHpa, snapshot.ukSurface.pressureMslHpa)}</p>
+                  </>
                 )}
+                {beat.id === 1 && (
+                  <>
+                    <p>{freezingReading(snapshot.ukSurface.freezingLevelM)}</p>
+                    <p className="text-[10px] font-mono text-slate-500">Data for {validLabel} UTC</p>
+                  </>
+                )}
+              </div>
 
-                {idx < BEAT_DESCRIPTORS.length - 1 ? (
+              <div className="mt-3 flex justify-end">
+                {next ? (
                   <button
                     type="button"
-                    onClick={() => onJumpBeat((beat.id + 1) as BeatId)}
-                    className="inline-flex items-center gap-1 text-sky-300 hover:text-sky-200 transition"
+                    onClick={() => onJumpBeat(next.id)}
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-sky-300 hover:text-sky-200 transition"
                   >
-                    <span>Next beat</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
+                    <span>Next: {next.shortTitle}</span>
+                    <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                 ) : (
                   onReadBriefing && (
                     <button
                       type="button"
                       onClick={onReadBriefing}
-                      className="inline-flex items-center gap-1 rounded-lg bg-sky-500/15 border border-sky-400/35 px-2.5 py-1 text-sky-200 hover:bg-sky-500/25 transition"
+                      className="inline-flex items-center gap-1 rounded-lg bg-sky-500/15 border border-sky-400/35 px-2.5 py-1 text-[11px] font-mono text-sky-200 hover:bg-sky-500/25 transition"
                     >
-                      <span>Read Full Briefing</span>
-                      <ChevronDown className="w-3.5 h-3.5" />
+                      <span>Read the full briefing</span>
+                      <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                   )
                 )}
               </div>
-
-              {beat.id === 1 && (
-                <div className="mt-1.5 text-[10px] font-mono text-slate-500">
-                  Forecast slot: {validLabel} UTC · Freeze lvl {snapshot.ukSurface.freezingLevelM} m
-                </div>
-              )}
             </article>
           </section>
         );

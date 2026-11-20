@@ -37,28 +37,28 @@ function formatRelativeAge(iso: string, nowMs: number): string {
   if (Number.isNaN(t)) return '';
   const diffMin = Math.max(0, Math.round((nowMs - t) / 60000));
   if (diffMin < 1) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 60) return `${diffMin} min ago`;
   const hrs = Math.round(diffMin / 60);
-  return `${hrs}h ago`;
+  return `${hrs} hr ago`;
 }
 
 function getSourceBadge(fetchSource: FetchSource): { label: string; cls: string; dot: string } {
   switch (fetchSource) {
     case 'live-api':
       return {
-        label: 'LIVE FEED',
+        label: 'LIVE',
         cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
         dot: 'bg-emerald-400',
       };
     case 'cached-live':
       return {
-        label: 'CACHED LIVE',
+        label: 'LIVE',
         cls: 'bg-sky-500/15 text-sky-300 border-sky-500/40',
         dot: 'bg-sky-400',
       };
     case 'offline-fallback':
       return {
-        label: 'FALLBACK',
+        label: 'OFFLINE',
         cls: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
         dot: 'bg-amber-400',
       };
@@ -93,8 +93,10 @@ export function TopHud({
   const badge = getSourceBadge(snapshot.fetchSource);
   const pullText =
     snapshot.fetchSource === 'case-study'
-      ? `Nov 2026 Archive · Valid ${formatValidUtc(snapshot.validTimeIso)}`
-      : `Pulled ${formatUtcHm(snapshot.fetchedAtIso)} (${formatRelativeAge(snapshot.fetchedAtIso, nowMs)}) · Valid ${formatValidUtc(snapshot.validTimeIso)}`;
+      ? `Case study · data for ${formatValidUtc(snapshot.validTimeIso)}`
+      : snapshot.fetchSource === 'offline-fallback'
+        ? 'Live data unavailable · showing the case study'
+        : `Updated ${formatRelativeAge(snapshot.fetchedAtIso, nowMs)} (${formatUtcHm(snapshot.fetchedAtIso)}) · forecast for ${formatValidUtc(snapshot.validTimeIso)}`;
 
   return (
     <header className="fixed top-0 inset-x-0 z-30 pointer-events-none px-4 py-3 md:px-8">
@@ -129,13 +131,19 @@ export function TopHud({
               onClick={() => onJumpBeat(1)}
               className="inline-flex items-center gap-1 rounded-xl border border-sky-500/40 bg-slate-950/85 hover:bg-sky-500/15 backdrop-blur-md px-3 py-1.5 text-[11px] font-mono text-sky-200 shadow-lg transition"
             >
-              <ArrowUp className="w-3.5 h-3.5" />
-              <span>3D Globe</span>
+              <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Back to the globe</span>
             </button>
           )}
-          <div className="flex items-center rounded-xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-1 shadow-lg">
+          <div
+            role="group"
+            aria-label="Data source"
+            className="flex items-center rounded-xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-1 shadow-lg"
+          >
             <button
               type="button"
+              aria-pressed={mode === 'live'}
+              title="Today's atmosphere from Open-Meteo"
               onClick={() => onToggleMode('live')}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
                 mode === 'live'
@@ -143,10 +151,12 @@ export function TopHud({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Live Atmosphere
+              Live data
             </button>
             <button
               type="button"
+              aria-pressed={mode === 'case-study'}
+              title="The November 2026 event, as it happened"
               onClick={() => onToggleMode('case-study')}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
                 mode === 'case-study'
@@ -154,13 +164,14 @@ export function TopHud({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Nov 2026 Case Study
+              Case study
             </button>
             {mode === 'live' && (
               <button
                 type="button"
                 onClick={onRefreshLive}
-                title="Force Fresh Open-Meteo Pull"
+                title="Refresh live data"
+                aria-label="Refresh live data"
                 className="ml-1 p-1 rounded-lg text-slate-400 hover:text-sky-300 transition"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-sky-400' : ''}`} />
@@ -168,10 +179,16 @@ export function TopHud({
             )}
           </div>
 
-          <div className="flex items-center rounded-xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-1 shadow-lg">
-            <Box className="w-3.5 h-3.5 text-slate-400 ml-1.5 mr-1" />
+          <div
+            role="group"
+            aria-label="3D model"
+            className="flex items-center rounded-xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-1 shadow-lg"
+          >
+            <Box className="w-3.5 h-3.5 text-slate-400 ml-1.5 mr-1" aria-hidden="true" />
             <button
               type="button"
+              aria-pressed={modelSource === 'glb'}
+              title="Full 3D model (about 4.5 MB)"
               onClick={() => onToggleModelSource('glb')}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition ${
                 modelSource === 'glb'
@@ -179,10 +196,12 @@ export function TopHud({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Blender GLB
+              Detailed
             </button>
             <button
               type="button"
+              aria-pressed={modelSource === 'procedural'}
+              title="Lighter model for slower devices"
               onClick={() => onToggleModelSource('procedural')}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition ${
                 modelSource === 'procedural'
@@ -190,7 +209,7 @@ export function TopHud({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Procedural
+              Simple
             </button>
           </div>
         </div>
