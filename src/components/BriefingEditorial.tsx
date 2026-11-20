@@ -176,8 +176,9 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
             </div>
 
             <p className="text-sm sm:text-base leading-relaxed text-slate-300 max-w-3xl">
-              To find out, <strong className="text-white">Nick Silksman</strong>, Deputy Chief Meteorologist at the
-              Met Office, went back through weather records to the 1940s.
+              At the end of October, <strong className="text-white">Nick Silksman</strong>, Deputy Chief
+              Meteorologist at the Met Office, checked how rare this was. He compared the waves with ERA5 records
+              going back to the 1940s, including the strongest El Niño years.
             </p>
 
             <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
