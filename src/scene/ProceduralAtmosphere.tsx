@@ -16,6 +16,14 @@ import {
   createProceduralEarthTexture,
   createVortexTexture,
 } from './materials';
+import {
+  applyVortexMaterial,
+  domeUniformValues,
+  easeVisuals,
+  liveVisualTargets,
+  vortexMorphWeights,
+  type LiveVisuals,
+} from './liveVisuals';
 
 interface ProceduralAtmosphereProps {
   scrollProgress: number;
@@ -25,10 +33,10 @@ interface ProceduralAtmosphereProps {
 
 function ProceduralEarthPBR() {
   const [albedoMap, normalMap, roughnessMap, emissiveMap] = useTexture([
-    '/textures/earth_albedo.png',
-    '/textures/earth_normal.png',
-    '/textures/earth_roughness.png',
-    '/textures/earth_emissive.png',
+    `${import.meta.env.BASE_URL}textures/earth_albedo.png`,
+    `${import.meta.env.BASE_URL}textures/earth_normal.png`,
+    `${import.meta.env.BASE_URL}textures/earth_roughness.png`,
+    `${import.meta.env.BASE_URL}textures/earth_emissive.png`,
   ]);
 
   useEffect(() => {
@@ -297,6 +305,8 @@ export function ProceduralAtmosphere({
   const fallbackTex = useMemo(() => createProceduralEarthTexture(), []);
   const jetTex = useMemo(() => createJetStreamTexture(), []);
   const vortexTex = useMemo(() => createVortexTexture(), []);
+  const visTarget = useMemo(() => liveVisualTargets(snapshot), [snapshot]);
+  const vis = useRef<LiveVisuals | null>(null);
 
   const jetGeo = useMemo(() => buildJetStreamGeometry(), []);
   const vortexGeo = useMemo(() => buildPolarVortexGeometry(), []);
@@ -338,35 +348,17 @@ export function ProceduralAtmosphere({
       mat.opacity = 0.24 + 0.72 * Math.max(beat1Vis, beat5Vis);
     }
 
+    if (!vis.current) vis.current = { ...visTarget };
+    easeVisuals(vis.current, visTarget, dt);
     if (vortexMeshRef.current) {
       if (!vortexMeshRef.current.morphTargetInfluences) {
         vortexMeshRef.current.morphTargetInfluences = [0, 0];
       }
-      const w2In = THREE.MathUtils.smoothstep(p, 0.36, 0.47);
-      const w2Out = 1 - 0.55 * THREE.MathUtils.smoothstep(p, 0.52, 0.68);
-      const w2Scale = THREE.MathUtils.clamp(0.35 + 0.65 * snapshot.waves.wave2Norm, 0.2, 1.0);
-      const w2Val = w2In * w2Out * w2Scale;
-
-      const w1In = THREE.MathUtils.smoothstep(p, 0.46, 0.58);
-      const w1Out = 1 - THREE.MathUtils.smoothstep(p, 0.8, 0.94);
-      const w1Scale = THREE.MathUtils.clamp(0.35 + 0.65 * snapshot.waves.wave1Norm, 0.2, 1.0);
-      const w1Val = w1In * w1Out * w1Scale;
-
-      vortexMeshRef.current.morphTargetInfluences[0] = w2Val;
-      vortexMeshRef.current.morphTargetInfluences[1] = w1Val;
-
-      const u10 = snapshot.stratosphere60N.zonalMeanWindMs;
-      const spinFactor = snapshot.stratosphere60N.isReversed
-        ? -Math.max(0.18, Math.abs(u10) / 18)
-        : Math.max(0.25, u10 / 28);
-      vortexTex.offset.x -= dt * 0.22 * spinFactor;
-
-      const mat = vortexMeshRef.current.material as THREE.MeshStandardMaterial;
-      const reversalTint = snapshot.stratosphere60N.isReversed
-        ? THREE.MathUtils.smoothstep(p, 0.26, 0.46)
-        : 0.0;
-      mat.emissive.lerpColors(new THREE.Color('#6366f1'), new THREE.Color('#f43f5e'), reversalTint * 0.55);
-      mat.opacity = 0.82 * (1 - 0.65 * THREE.MathUtils.smoothstep(p, 0.82, 0.96));
+      const w = vortexMorphWeights(p, vis.current, snapshot.waves);
+      vortexMeshRef.current.morphTargetInfluences[0] = w.wave2;
+      vortexMeshRef.current.morphTargetInfluences[1] = w.wave1;
+      vortexTex.offset.x -= dt * 0.22 * vis.current.spin;
+      applyVortexMaterial(vortexMeshRef.current.material as THREE.MeshStandardMaterial, p, vis.current);
     }
 
     sliceMat.uniforms.uTime.value += dt;
@@ -377,9 +369,9 @@ export function ProceduralAtmosphere({
     sliceMat.uniforms.uReversedStrength.value = snapshot.stratosphere60N.isReversed ? 1.0 : 0.35;
 
     domeMat.uniforms.uTime.value += dt;
-    const scandiStrength = snapshot.scandiHigh.pressureMslHpa >= 1018 ? 1.0 : 0.55;
-    domeMat.uniforms.uOpacity.value =
-      THREE.MathUtils.smoothstep(p, 0.78, 0.9) * scandiStrength;
+    const dome = domeUniformValues(p, vis.current);
+    domeMat.uniforms.uOpacity.value = dome.opacity;
+    domeMat.uniforms.uHeight.value = dome.height;
   });
 
   return (

@@ -7,13 +7,24 @@ import { TopHud } from './components/TopHud';
 import { AltitudeGauge } from './components/AltitudeGauge';
 import { ScrollStory } from './components/ScrollStory';
 import { BriefingEditorial } from './components/BriefingEditorial';
+import { IntroHero } from './components/IntroHero';
+import { scrollToId } from './lib/scroll';
+import { useMediaQuery } from './lib/useMediaQuery';
+import { initialModelSource, saveModelSource } from './lib/modelPreference';
 
 export default function App() {
   const storyRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [inEditorial, setInEditorial] = useState(false);
+  const [inIntro, setInIntro] = useState(true);
   const [mode, setMode] = useState<WeatherMode>('case-study');
-  const [modelSource, setModelSource] = useState<ModelSource>('glb');
+  const [modelSource, setModelSourceState] = useState<ModelSource>(initialModelSource);
+  const setModelSource = useCallback((next: ModelSource) => {
+    setModelSourceState(next);
+    saveModelSource(next);
+  }, []);
+  // Phones: no room to pin figures to the globe, so they go inside the story cards.
+  const isNarrow = useMediaQuery('(max-width: 767px)');
   const [snapshot, setSnapshot] = useState<AtmosphereSnapshot>(() => getCaseStudySnapshot());
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,6 +58,7 @@ export default function App() {
         const next = Math.min(1, Math.max(0, -rect.top / storyScrollable));
         setScrollProgress(next);
         setInEditorial(rect.bottom <= window.innerHeight * 0.65);
+        setInIntro(rect.top > window.innerHeight * 0.35);
       }
     };
 
@@ -66,19 +78,9 @@ export default function App() {
     };
   }, []);
 
-  const handleJumpBeat = useCallback((beat: BeatId) => {
-    const el = document.getElementById(`beat-${beat}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
+  const handleJumpBeat = useCallback((beat: BeatId) => scrollToId(`beat-${beat}`), []);
 
-  const handleJumpEditorial = useCallback(() => {
-    const el = document.getElementById('briefing-editorial');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
+  const handleJumpEditorial = useCallback(() => scrollToId('briefing-editorial'), []);
 
   const activeBeat = progressToBeat(scrollProgress);
 
@@ -86,13 +88,11 @@ export default function App() {
     <div className="relative min-h-screen bg-[#040914] text-slate-100">
       <TopHud
         mode={mode}
-        modelSource={modelSource}
         snapshot={snapshot}
         isLoading={isLoading}
         inEditorial={inEditorial}
         onJumpBeat={handleJumpBeat}
         onToggleMode={(next) => void loadMode(next, false)}
-        onToggleModelSource={setModelSource}
         onRefreshLive={() => void loadMode('live', true)}
       />
 
@@ -101,27 +101,45 @@ export default function App() {
         activeBeat={activeBeat}
         modelSource={modelSource}
         snapshot={snapshot}
-        showTooltips={!inEditorial}
+        showTooltips={!inEditorial && !inIntro && !isNarrow}
       />
 
       <AltitudeGauge
         scrollProgress={scrollProgress}
         activeBeat={activeBeat}
-        hidden={inEditorial}
+        hidden={inEditorial || inIntro}
         onJumpBeat={handleJumpBeat}
         onJumpEditorial={handleJumpEditorial}
+      />
+
+      <IntroHero
+        onStart={() => handleJumpBeat(1)}
+        onSkipToBriefing={handleJumpEditorial}
+        modelSource={modelSource}
+        onUseSimpleModel={() => setModelSource('procedural')}
       />
 
       <div ref={storyRef}>
         <ScrollStory
           activeBeat={activeBeat}
           snapshot={snapshot}
+          mode={mode}
+          onToggleMode={(next) => void loadMode(next, false)}
+          inlineFigures={isNarrow}
+          scrollProgress={scrollProgress}
           onJumpBeat={handleJumpBeat}
           onReadBriefing={handleJumpEditorial}
         />
       </div>
 
-      <BriefingEditorial snapshot={snapshot} onJumpBeat={handleJumpBeat} />
+      <BriefingEditorial
+        snapshot={snapshot}
+        mode={mode}
+        onToggleMode={(next) => void loadMode(next, false)}
+        modelSource={modelSource}
+        onChangeModel={setModelSource}
+        onJumpBeat={handleJumpBeat}
+      />
     </div>
   );
 }

@@ -62,7 +62,7 @@ function CameraRig({ scrollProgress }: CameraRigProps) {
 
 function EarthClouds({ scrollProgress }: { scrollProgress: number }) {
   const cloudsRef = useRef<THREE.Mesh>(null);
-  const cloudTex = useTexture('/textures/earth_clouds.png');
+  const cloudTex = useTexture(`${import.meta.env.BASE_URL}textures/earth_clouds.png`);
 
   useEffect(() => {
     cloudTex.colorSpace = THREE.SRGBColorSpace;

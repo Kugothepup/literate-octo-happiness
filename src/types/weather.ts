@@ -12,6 +12,8 @@ export interface VerticalLevelPoint {
   climatologyUMs: number;
   anomalyMs: number;
   tempC: number;
+  /** True when the live feed returned nothing for this level (values are placeholders). */
+  noData?: boolean;
 }
 
 export interface RingSample60N {
@@ -102,6 +104,8 @@ export interface BeatDescriptor {
   id: BeatId;
   range: [number, number];
   kicker: string;
+  /** Short name used for 'Next' buttons, the altitude gauge and briefing links. */
+  shortTitle: string;
   title: string;
   subtitle: string;
   pressureLabel: string;

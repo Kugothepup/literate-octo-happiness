@@ -42,7 +42,7 @@
     "geopotentialHeight10HpaM": 30420,
     "sswThresholdMs": 0.0,
     "isReversed": true,
-    "stratThermalFeelNote": "Actual 30 km temp -28.4°C (+43.4°C vs ERA5). At ~1% sea-level density, surface wind chill does not apply, yet thermal reversal wrecks the vortex.",
+    "stratThermalFeelNote": "Over the pole, 30 km up: -28.4°C, 43.4°C warmer than a typical November. A jump like that is the signature of a sudden warming.",
     "timeSeries24hMs": [
       { "time": "-24h", "zonalWindMs": 6.4 },
       { "time": "-18h", "zonalWindMs": 2.9 },
@@ -93,5 +93,5 @@
     { "pressureHpa": 850, "altitudeKm": 1.5, "windSpeedMs": 9.2, "windDirectionDeg": 82, "zonalUMs": -2.4, "climatologyUMs": 6.8, "anomalyMs": -9.2, "tempC": -8.6 },
     { "pressureHpa": 1000, "altitudeKm": 0.1, "windSpeedMs": 8.1, "windDirectionDeg": 78, "zonalUMs": -3.1, "climatologyUMs": 4.2, "anomalyMs": -7.3, "tempC": -3.4 }
   ],
-  "battlegroundSummary": "Scandinavian Blocking High (1038 hPa) deflects the Atlantic low (975 hPa), placing the UK in the cold easterly battleground."
+  "battlegroundSummary": "High pressure over Scandinavia (1038 hPa) is holding back the Atlantic low (975 hPa), putting the UK in the path of cold easterly winds."
 }

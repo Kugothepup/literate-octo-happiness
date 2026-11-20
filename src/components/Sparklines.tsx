@@ -137,27 +137,38 @@ interface VerticalProfileChartProps {
 }
 
 export function VerticalProfileChart({ levels }: VerticalProfileChartProps) {
-  const maxAbs = Math.max(30, ...levels.map((l) => Math.abs(l.anomalyMs)));
+  const maxAbs = Math.max(30, ...levels.filter((l) => !l.noData).map((l) => Math.abs(l.anomalyMs)));
   return (
     <div className="space-y-1">
       {levels.map((lvl) => {
+        if (lvl.noData) {
+          return (
+            <div
+              key={lvl.pressureHpa}
+              className="grid grid-cols-[56px_1fr] items-center gap-1.5 text-[11px]"
+            >
+              <span className="font-mono text-slate-400 text-right">{lvl.pressureHpa} hPa</span>
+              <span className="font-mono text-slate-400">No live data at this height</span>
+            </div>
+          );
+        }
         const pct = Math.min(100, (Math.abs(lvl.anomalyMs) / maxAbs) * 100);
         const isWeakened = lvl.anomalyMs < 0;
         return (
           <div
             key={lvl.pressureHpa}
-            className="grid grid-cols-[44px_1fr_42px_40px] items-center gap-1.5 text-[10px]"
+            className="grid grid-cols-[56px_1fr_44px_40px] items-center gap-1.5 text-[11px]"
           >
             <span className="font-mono text-slate-400 text-right">{lvl.pressureHpa} hPa</span>
             <div className="h-2 bg-slate-800/90 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full ${
-                  isWeakened ? 'bg-gradient-to-r from-sky-400 to-indigo-400' : 'bg-amber-400'
+                  isWeakened ? 'bg-gradient-to-r from-sky-400 to-indigo-400' : 'bg-slate-500'
                 }`}
                 style={{ width: `${Math.max(8, pct)}%` }}
               />
             </div>
-            <span className={`font-mono text-right ${isWeakened ? 'text-sky-300' : 'text-amber-300'}`}>
+            <span className={`font-mono text-right ${isWeakened ? 'text-sky-300' : 'text-slate-300'}`}>
               {lvl.anomalyMs > 0 ? `+${lvl.anomalyMs}` : lvl.anomalyMs}
             </span>
             <span className="font-mono text-right text-slate-300">

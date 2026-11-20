@@ -235,14 +235,20 @@ export function createBlockingDomeMaterial(): THREE.ShaderMaterial {
     uniforms: {
       uTime: { value: 0 },
       uOpacity: { value: 0.0 },
+      uHeight: { value: 1.0 },
     },
     vertexShader: /* glsl */ `
+      uniform float uHeight;
       varying vec2 vUv;
       varying vec3 vNormalView;
       varying vec3 vViewPos;
       void main() {
         vUv = uv;
-        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+        // Dome vertices sit around the globe centre; base radius is Earth (2.0) + 0.015.
+        float r = length(position);
+        float baseR = 2.015;
+        vec3 p = position / max(r, 1e-4) * (baseR + max(r - baseR, 0.0) * uHeight);
+        vec4 mvPos = modelViewMatrix * vec4(p, 1.0);
         vViewPos = -mvPos.xyz;
         vNormalView = normalize(normalMatrix * normal);
         gl_Position = projectionMatrix * mvPos;
