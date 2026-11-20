@@ -176,7 +176,7 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
             </div>
 
             <p className="text-sm sm:text-base leading-relaxed text-slate-300 max-w-3xl">
-              At the end of October, <strong className="text-white">Nick Silksman</strong>, Deputy Chief
+              At the end of October, <strong className="text-white">Nick Silkstone</strong>, Deputy Chief
               Meteorologist at the Met Office, checked how rare this was. He compared the waves with ERA5 records
               going back to the 1940s, including very strong El Niño years.
             </p>
