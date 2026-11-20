@@ -47,8 +47,8 @@ export function VideoCredit() {
 
       <div className="space-y-3">
         <p className="text-[11px] font-mono uppercase tracking-widest text-sky-300">Where this story comes from</p>
-        <h3 className="text-xl font-semibold text-white">Watch the Met Office Deep Dive</h3>
-        <p className="text-sm leading-relaxed text-slate-300">
+        <h3 className="font-serif text-2xl font-semibold text-white">Watch the Met Office Deep Dive</h3>
+        <p className="font-serif text-base leading-relaxed text-slate-200">
           This explainer is drawn from the Met Office’s weekly Deep Dive of {SOURCE_VIDEO.published},
           “Stratosphere downwards”, presented by meteorologist {SOURCE_VIDEO.presenter}. The part about the
           stratosphere starts at {sswStartLabel}.

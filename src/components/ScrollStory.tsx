@@ -18,12 +18,7 @@ const COMPARE_PROMPTS: Partial<Record<BeatId, { toEvent: string; toToday: string
   5: { toEvent: 'See the pattern during the November event', toToday: 'See today’s pattern' },
 };
 
-const MS_TO_MPH = 2.23694;
 const CLIM = baseline.novemberClimatology;
-
-function signed(n: number, digits = 1): string {
-  return `${n > 0 ? '+' : ''}${n.toFixed(digits)}`;
-}
 
 /** One plain-English line on what today's vortex wind means. */
 function vortexReading(windMs: number, isReversed: boolean): string {
@@ -47,6 +42,21 @@ function freezingReading(levelM: number): string {
   return `Freezing level ${Math.round(levelM)} m: hills higher than that are in sub-zero air.`;
 }
 
+/** What the temperature over the pole means, in words (the tooltip has the figures). */
+function thermalReading(anomalyC: number): string {
+  if (anomalyC >= 12) return 'The air over the pole is far warmer than usual: the signature of a sudden warming.';
+  if (anomalyC >= 3) return 'The air over the pole is warmer than a typical November.';
+  if (anomalyC <= -3) return 'The air over the pole is colder than a typical November.';
+  return 'The air over the pole is about normal for November.';
+}
+
+/** How big the waves are compared with a typical November. */
+function waveReading(waves: AtmosphereSnapshot['waves']): string {
+  const ratio = (waves.wave1HeightAmpM / CLIM.wave1GeopotentialAmpM + waves.wave2HeightAmpM / CLIM.wave2GeopotentialAmpM) / 2;
+  if (ratio < 1.25) return 'These waves are close to their usual November size.';
+  return `These waves are about ${ratio.toFixed(1)}× their usual November size.`;
+}
+
 /** How much of the atmosphere at 60°N has slower-than-normal westerlies right now. */
 function dripReading(levels: AtmosphereSnapshot['verticalProfile']): string {
   const measured = levels.filter((l) => !l.noData);
@@ -63,7 +73,6 @@ export function ScrollStory({
   onJumpBeat,
   onReadBriefing,
 }: ScrollStoryProps) {
-  const validLabel = new Date(snapshot.validTimeIso).toUTCString().slice(5, 22);
   const isLive = snapshot.fetchSource === 'live-api' || snapshot.fetchSource === 'cached-live';
   const dataLabel = isLive ? 'Live now' : 'November case study';
   const s60 = snapshot.stratosphere60N;
@@ -99,73 +108,38 @@ export function ScrollStory({
 
               <h2
                 id={`beat-${beat.id}-title`}
-                className="mt-2.5 text-xl sm:text-2xl font-semibold tracking-tight text-white text-balance"
+                className="mt-2.5 font-serif text-2xl sm:text-[1.75rem] leading-tight font-semibold tracking-tight text-white text-balance"
               >
                 {beat.title}
               </h2>
               <p className="mt-0.5 text-[13px] font-medium text-sky-200/80 text-pretty">{beat.subtitle}</p>
 
-              <p className="mt-3 text-[15px] leading-relaxed text-slate-300 text-pretty">{beat.body}</p>
+              <p className="mt-3 font-serif text-base sm:text-[17px] leading-relaxed text-slate-200 text-pretty">{beat.body}</p>
 
               <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/75 px-3.5 py-2.5 text-xs text-slate-200">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-amber-300 block mb-0.5">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-slate-300 block mb-0.5">
                   Why it matters
                 </span>
                 {beat.takeaway}
               </div>
 
-              {/* What the data says for this beat, live or case study */}
-              <div className="mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-400 space-y-0.5">
+              {/* What the data means for this beat. The figures themselves live in the 3D tooltip. */}
+              <div className="mt-4 pt-3 border-t border-slate-800/80 text-[13px] leading-snug text-slate-300 space-y-1">
                 <span className="block font-mono text-[11px] uppercase tracking-wider text-slate-400">
                   {dataLabel}
                 </span>
-                {beat.id === 1 && (
-                  <p className="font-mono">
-                    Scottish Highlands:{' '}
-                    <strong className="text-white">{snapshot.ukSurface.tempC.toFixed(1)}°C</strong>, feels like{' '}
-                    <strong className="text-sky-300">{snapshot.ukSurface.feelsLikeC.toFixed(1)}°C</strong>
-                  </p>
-                )}
+                {beat.id === 1 && <p>{freezingReading(snapshot.ukSurface.freezingLevelM)}</p>}
                 {beat.id === 2 && (
                   <>
-                    <p className="font-mono">
-                      Vortex wind at 60°N:{' '}
-                      <strong className={s60.isReversed ? 'text-rose-300' : 'text-sky-300'}>
-                        {signed(s60.zonalMeanWindMs)} m/s
-                      </strong>{' '}
-                      <span className="text-slate-400">({Math.round(Math.abs(s60.zonalMeanWindMs) * MS_TO_MPH)} mph)</span>
-                    </p>
                     <p>{vortexReading(s60.zonalMeanWindMs, s60.isReversed)}</p>
+                    <p>{thermalReading(s60.polarCapTempAnomalyC)}</p>
                     <p className="text-slate-400">On the globe, the ring’s spin, colour and shape follow these readings.</p>
                   </>
                 )}
-                {beat.id === 3 && (
-                  <>
-                    <p className="font-mono">
-                      Wave 1: <strong className="text-rose-300">{snapshot.waves.wave1HeightAmpM} m</strong> · Wave 2:{' '}
-                      <strong className="text-violet-300">{snapshot.waves.wave2HeightAmpM} m</strong>
-                    </p>
-                    <p>
-                      A typical November: {CLIM.wave1GeopotentialAmpM} m and {CLIM.wave2GeopotentialAmpM} m.
-                    </p>
-                  </>
-                )}
+                {beat.id === 3 && <p>{waveReading(snapshot.waves)}</p>}
                 {beat.id === 4 && <p>{dripReading(snapshot.verticalProfile)}</p>}
                 {beat.id === 5 && (
-                  <>
-                    <p className="font-mono">
-                      Scandinavia:{' '}
-                      <strong className="text-amber-300">{Math.round(snapshot.scandiHigh.pressureMslHpa)} hPa</strong> ·
-                      UK: <strong className="text-sky-300">{Math.round(snapshot.ukSurface.pressureMslHpa)} hPa</strong>
-                    </p>
-                    <p>{battlegroundReading(snapshot.scandiHigh.pressureMslHpa, snapshot.ukSurface.pressureMslHpa)}</p>
-                  </>
-                )}
-                {beat.id === 1 && (
-                  <>
-                    <p>{freezingReading(snapshot.ukSurface.freezingLevelM)}</p>
-                    <p className="text-[11px] font-mono text-slate-400">Data for {validLabel} UTC</p>
-                  </>
+                  <p>{battlegroundReading(snapshot.scandiHigh.pressureMslHpa, snapshot.ukSurface.pressureMslHpa)}</p>
                 )}
               </div>
 
@@ -174,7 +148,11 @@ export function ScrollStory({
                   <button
                     type="button"
                     onClick={() => onToggleMode(mode === 'live' ? 'case-study' : 'live')}
-                    className="inline-flex items-center rounded-lg border border-violet-400/35 bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-200 hover:bg-violet-500/20 transition-[transform,background-color] active:scale-[0.96]"
+                    className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium transition-[transform,background-color] active:scale-[0.96] ${
+                      mode === 'live'
+                        ? 'border-violet-400/35 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
+                        : 'border-emerald-400/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20'
+                    }`}
                   >
                     {mode === 'live' ? compare.toEvent : compare.toToday}
                   </button>

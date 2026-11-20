@@ -59,8 +59,8 @@ function getSourceBadge(fetchSource: FetchSource): { label: string; cls: string;
     case 'offline-fallback':
       return {
         label: 'OFFLINE',
-        cls: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
-        dot: 'bg-amber-400',
+        cls: 'bg-slate-500/15 text-slate-300 border-slate-500/40',
+        dot: 'bg-slate-400',
       };
     case 'case-study':
     default:

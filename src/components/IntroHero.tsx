@@ -23,15 +23,15 @@ export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
           An explainer in five scrolls · November 2026
         </p>
 
-        <h1 id="intro-title" className="text-4xl sm:text-5xl font-bold tracking-tight text-white leading-[1.05] text-balance">
+        <h1 id="intro-title" className="font-serif text-5xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.02] text-balance">
           The cold that starts 30&nbsp;km&nbsp;up
         </h1>
 
-        <p className="text-base sm:text-lg leading-relaxed text-slate-200 text-pretty">
+        <p className="font-serif text-lg sm:text-xl leading-relaxed text-slate-100 text-pretty">
           In early November, the winds that circle high above the North Pole took their biggest early-season
           battering since records began in the 1940s.
         </p>
-        <p className="text-sm sm:text-base leading-relaxed text-slate-300 text-pretty">
+        <p className="font-serif text-base sm:text-lg leading-relaxed text-slate-300 text-pretty">
           Scroll to follow that shock down to the ground, and see why it raises the odds of a cold spell this
           December without promising one.
         </p>

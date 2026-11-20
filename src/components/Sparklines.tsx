@@ -163,12 +163,12 @@ export function VerticalProfileChart({ levels }: VerticalProfileChartProps) {
             <div className="h-2 bg-slate-800/90 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full ${
-                  isWeakened ? 'bg-gradient-to-r from-sky-400 to-indigo-400' : 'bg-amber-400'
+                  isWeakened ? 'bg-gradient-to-r from-sky-400 to-indigo-400' : 'bg-slate-500'
                 }`}
                 style={{ width: `${Math.max(8, pct)}%` }}
               />
             </div>
-            <span className={`font-mono text-right ${isWeakened ? 'text-sky-300' : 'text-amber-300'}`}>
+            <span className={`font-mono text-right ${isWeakened ? 'text-sky-300' : 'text-slate-300'}`}>
               {lvl.anomalyMs > 0 ? `+${lvl.anomalyMs}` : lvl.anomalyMs}
             </span>
             <span className="font-mono text-right text-slate-300">

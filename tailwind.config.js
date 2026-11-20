@@ -5,6 +5,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Source Serif 4 Variable"', 'Georgia', 'serif'],
         mono: ['"JetBrains Mono Variable"', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       colors: {

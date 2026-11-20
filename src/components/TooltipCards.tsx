@@ -18,12 +18,7 @@ function compassFrom(deg: number): string {
 
 function AnchorDot({ colorClass }: { colorClass: string }) {
   return (
-    <span className="relative flex h-2.5 w-2.5 shrink-0">
-      <span
-        className={`animate-ping motion-reduce:hidden absolute inline-flex h-full w-full rounded-full opacity-75 ${colorClass}`}
-      />
-      <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${colorClass}`} />
-    </span>
+    <span className={`relative inline-flex h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-white/25 ${colorClass}`} />
   );
 }
 
@@ -37,11 +32,10 @@ export function TooltipOverlay3D({
   const s60 = snapshot.stratosphere60N;
   const isThermalReversal = s60.poleTo60NGradientC > 0;
   const isCold850 = snapshot.ukSurface.temp850HpaC <= -5;
-  // How many times bigger than a typical November the two waves are, on average.
-  const waveRatio =
-    (snapshot.waves.wave1HeightAmpM / snapshot.waves.era5NovClimWave1M +
-      snapshot.waves.wave2HeightAmpM / snapshot.waves.era5NovClimWave2M) /
-    2;
+  // Amber means high pressure, so Scandinavia only turns amber when there is a high there.
+  const isBlock =
+    snapshot.scandiHigh.pressureMslHpa >= 1022 &&
+    snapshot.scandiHigh.pressureMslHpa > snapshot.ukSurface.pressureMslHpa;
 
   return (
     <group>
@@ -54,9 +48,9 @@ export function TooltipOverlay3D({
             style={{ pointerEvents: 'none' }}
           >
             <div className="flex items-start gap-2 -translate-y-6 translate-x-3">
-              <AnchorDot colorClass="bg-amber-400" />
+              <AnchorDot colorClass="bg-slate-200" />
               <div className="w-72 rounded-xl border border-slate-700/80 bg-slate-950/95 backdrop-blur-md p-3 shadow-2xl text-slate-100">
-                <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-amber-300">
+                <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-slate-300">
                   <span>Scottish Highlands</span>
                   <span>1000 hPa</span>
                 </div>
@@ -125,9 +119,6 @@ export function TooltipOverlay3D({
                   {Math.round(snapshot.ukSurface.jetSpeed250HpaMs * 2.23694)} mph · from the{' '}
                   {compassFrom(snapshot.ukSurface.jetDirection250HpaDeg)}
                 </div>
-                <p className="mt-1 text-xs text-slate-300">
-                  Running south of the UK, steering wet Atlantic weather under the colder air to the north.
-                </p>
               </div>
             </div>
           </Html>
@@ -153,6 +144,9 @@ export function TooltipOverlay3D({
                   <span className="text-lg font-semibold font-mono text-white">
                     {s60.zonalMeanWindMs > 0 ? '+' : ''}
                     {s60.zonalMeanWindMs.toFixed(1)} m/s
+                    <span className="ml-1.5 text-xs font-normal text-slate-400">
+                      {Math.round(Math.abs(s60.zonalMeanWindMs) * 2.23694)} mph
+                    </span>
                   </span>
                   <span
                     className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold ${
@@ -207,9 +201,6 @@ export function TooltipOverlay3D({
                 <div className="mt-1.5">
                   <PolarTempSparkline series={s60.tempSeries24hC} />
                 </div>
-                <p className="mt-1 text-xs leading-snug text-slate-400">
-                  {s60.stratThermalFeelNote}
-                </p>
               </div>
             </div>
           </div>
@@ -224,22 +215,25 @@ export function TooltipOverlay3D({
           style={{ pointerEvents: 'none' }}
         >
           <div className="flex items-start gap-2 translate-x-4 -translate-y-4">
-            <AnchorDot colorClass="bg-violet-400" />
-            <div className="w-72 rounded-xl border border-violet-400/45 bg-slate-950/95 backdrop-blur-md p-3 shadow-2xl text-slate-100">
-              <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-violet-300">
-                <span>{wave2Dominant ? 'First: the squeeze' : 'Then: the shove'}</span>
-                <span>{waveRatio.toFixed(1)}× typical size</span>
+            <AnchorDot colorClass={wave2Dominant ? 'bg-fuchsia-400' : 'bg-lime-300'} />
+            <div className="w-72 rounded-xl border border-slate-700/80 bg-slate-950/95 backdrop-blur-md p-3 shadow-2xl text-slate-100">
+              <div
+                className={`text-[11px] font-mono uppercase tracking-wider ${
+                  wave2Dominant ? 'text-fuchsia-300' : 'text-lime-300'
+                }`}
+              >
+                {wave2Dominant ? 'First: the squeeze' : 'Then: the shove'}
               </div>
 
               <div className="mt-2 space-y-2 text-[11px]">
                 <div>
                   <div className="flex justify-between font-mono text-slate-200">
-                    <span>Wave 1 · the shove</span>
+                    <span className="text-lime-300">Wave 1 · the shove</span>
                     <span>{snapshot.waves.wave1HeightAmpM} m</span>
                   </div>
                   <div className="mt-1 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
                     <div
-                      className="h-full bg-rose-400 rounded-full"
+                      className="h-full bg-lime-300 rounded-full"
                       style={{ width: `${Math.round(snapshot.waves.wave1Norm * 100)}%` }}
                     />
                   </div>
@@ -250,12 +244,12 @@ export function TooltipOverlay3D({
 
                 <div>
                   <div className="flex justify-between font-mono text-slate-200">
-                    <span>Wave 2 · the squeeze</span>
+                    <span className="text-fuchsia-300">Wave 2 · the squeeze</span>
                     <span>{snapshot.waves.wave2HeightAmpM} m</span>
                   </div>
                   <div className="mt-1 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
                     <div
-                      className="h-full bg-violet-400 rounded-full"
+                      className="h-full bg-fuchsia-400 rounded-full"
                       style={{ width: `${Math.round(snapshot.waves.wave2Norm * 100)}%` }}
                     />
                   </div>
@@ -301,15 +295,15 @@ export function TooltipOverlay3D({
           style={{ pointerEvents: 'none' }}
         >
           <div className="flex items-start gap-2 translate-x-3 -translate-y-4">
-            <AnchorDot colorClass="bg-amber-400" />
-            <div className="w-80 rounded-xl border border-amber-400/45 bg-slate-950/95 backdrop-blur-md p-3 shadow-2xl text-slate-100">
-              <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-amber-300">
+            <AnchorDot colorClass={isBlock ? 'bg-amber-400' : 'bg-slate-200'} />
+            <div className="w-80 rounded-xl border border-slate-700/80 bg-slate-950/95 backdrop-blur-md p-3 shadow-2xl text-slate-100">
+              <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-slate-300">
                 <span>The battleground</span>
                 <span>Pressure · temp</span>
               </div>
               <div className="mt-2 grid grid-cols-3 gap-1.5 text-center font-mono">
-                <div className="rounded-lg bg-slate-900/90 border border-sky-500/30 p-1.5">
-                  <div className="text-[11px] text-sky-300">ATLANTIC</div>
+                <div className="rounded-lg bg-slate-900/90 border border-slate-700 p-1.5">
+                  <div className="text-[11px] text-slate-300">ATLANTIC</div>
                   <div className="text-xs font-semibold text-white">
                     {Math.round(snapshot.atlanticLow.pressureMslHpa)} hPa
                   </div>
@@ -328,26 +322,25 @@ export function TooltipOverlay3D({
                   <div className="text-[11px] text-slate-200">
                     {snapshot.ukSurface.tempC.toFixed(1)}°C
                   </div>
-                  <div className="text-[11px] text-sky-300">
+                  <div className="text-[11px] text-slate-400">
                     Feels {snapshot.ukSurface.feelsLikeC.toFixed(0)}°C
                   </div>
                 </div>
-                <div className="rounded-lg bg-slate-900/90 border border-amber-500/40 p-1.5">
-                  <div className="text-[11px] text-amber-300">SCANDINAVIA</div>
-                  <div className="text-xs font-semibold text-amber-200">
+                <div
+                  className={`rounded-lg bg-slate-900/90 border p-1.5 ${isBlock ? 'border-amber-500/50' : 'border-slate-700'}`}
+                >
+                  <div className={`text-[11px] ${isBlock ? 'text-amber-300' : 'text-slate-300'}`}>
+                    {isBlock ? 'SCANDINAVIA · HIGH' : 'SCANDINAVIA'}
+                  </div>
+                  <div className={`text-xs font-semibold ${isBlock ? 'text-amber-200' : 'text-white'}`}>
                     {Math.round(snapshot.scandiHigh.pressureMslHpa)} hPa
                   </div>
-                  <div className="text-[11px] text-amber-100">
-                    {snapshot.scandiHigh.tempC.toFixed(1)}°C
-                  </div>
-                  <div className="text-[11px] text-amber-300/80">
+                  <div className="text-[11px] text-slate-200">{snapshot.scandiHigh.tempC.toFixed(1)}°C</div>
+                  <div className="text-[11px] text-slate-400">
                     Feels {snapshot.scandiHigh.feelsLikeC.toFixed(0)}°C
                   </div>
                 </div>
               </div>
-              <p className="mt-2 text-xs leading-snug text-slate-300">
-                {snapshot.battlegroundSummary}
-              </p>
             </div>
           </div>
         </Html>
