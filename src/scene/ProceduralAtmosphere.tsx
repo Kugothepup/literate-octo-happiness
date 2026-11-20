@@ -12,7 +12,6 @@ import {
 import {
   createAtmosphereSliceMaterial,
   createBlockingDomeMaterial,
-  createJetStreamTexture,
   createProceduralEarthTexture,
   createVortexTexture,
 } from './materials';
@@ -24,6 +23,7 @@ import {
   vortexMorphWeights,
   type LiveVisuals,
 } from './liveVisuals';
+import { LiveJetRibbon } from './LiveJetRibbon';
 
 interface ProceduralAtmosphereProps {
   scrollProgress: number;
@@ -73,66 +73,6 @@ function ProceduralEarthFallback({ texture }: { texture: THREE.CanvasTexture }) 
   );
 }
 
-function buildJetStreamGeometry(): THREE.BufferGeometry {
-  const nAlong = 96;
-  const nAcross = 4;
-  const jetRadius = EARTH_RADIUS + 0.095;
-  const positions: number[] = [];
-  const uvs: number[] = [];
-  const indices: number[] = [];
-
-  const centerline = (t: number) => {
-    const lon = -72 + 116 * t;
-    const lat =
-      48.5 -
-      4.2 * Math.sin(2 * Math.PI * (t - 0.15)) -
-      2.6 * Math.cos(3 * Math.PI * (t - 0.35));
-    return geoToThree(lat, lon, jetRadius);
-  };
-
-  for (let i = 0; i <= nAlong; i++) {
-    const t = i / nAlong;
-    const pC = centerline(t);
-    const pN = centerline(Math.min(1, t + 0.01));
-    const pP = centerline(Math.max(0, t - 0.01));
-    const tangent = (t < 0.99 ? pN.clone().sub(pC) : pC.clone().sub(pP)).normalize();
-    const up = pC.clone().normalize();
-    const side = new THREE.Vector3().crossVectors(up, tangent).normalize();
-    const taper = Math.pow(Math.sin(Math.PI * t), 0.35);
-    const halfWidth = 0.075 * taper;
-    const arch = 0.018 * taper;
-
-    for (let j = 0; j <= nAcross; j++) {
-      const v = j / nAcross;
-      const sOff = (v - 0.5) * 2;
-      const crown = arch * (1 - sOff * sOff);
-      const pos = pC
-        .clone()
-        .addScaledVector(side, sOff * halfWidth)
-        .addScaledVector(up, crown);
-      positions.push(pos.x, pos.y, pos.z);
-      uvs.push(t * 3, v);
-    }
-  }
-
-  const stride = nAcross + 1;
-  for (let i = 0; i < nAlong; i++) {
-    for (let j = 0; j < nAcross; j++) {
-      const a = i * stride + j;
-      const b = (i + 1) * stride + j;
-      const c = (i + 1) * stride + (j + 1);
-      const d = i * stride + (j + 1);
-      indices.push(a, b, c, a, c, d);
-    }
-  }
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-  geo.setIndex(indices);
-  geo.computeVertexNormals();
-  return geo;
-}
 
 function buildPolarVortexGeometry(): THREE.BufferGeometry {
   const nAzim = 72;
@@ -299,16 +239,13 @@ export function ProceduralAtmosphere({
   snapshot,
   onAnchorsResolved,
 }: ProceduralAtmosphereProps) {
-  const jetMeshRef = useRef<THREE.Mesh>(null);
   const vortexMeshRef = useRef<THREE.Mesh>(null);
 
   const fallbackTex = useMemo(() => createProceduralEarthTexture(), []);
-  const jetTex = useMemo(() => createJetStreamTexture(), []);
   const vortexTex = useMemo(() => createVortexTexture(), []);
   const visTarget = useMemo(() => liveVisualTargets(snapshot), [snapshot]);
   const vis = useRef<LiveVisuals | null>(null);
 
-  const jetGeo = useMemo(() => buildJetStreamGeometry(), []);
   const vortexGeo = useMemo(() => buildPolarVortexGeometry(), []);
   const sliceGeo = useMemo(() => buildAtmosphereSliceGeometry(), []);
   const domeGeo = useMemo(() => buildBlockingDomeGeometry(), []);
@@ -323,30 +260,18 @@ export function ProceduralAtmosphere({
   useEffect(() => {
     return () => {
       fallbackTex.dispose();
-      jetTex.dispose();
       vortexTex.dispose();
-      jetGeo.dispose();
       vortexGeo.dispose();
       sliceGeo.dispose();
       domeGeo.dispose();
       sliceMat.dispose();
       domeMat.dispose();
     };
-  }, [fallbackTex, jetTex, vortexTex, jetGeo, vortexGeo, sliceGeo, domeGeo, sliceMat, domeMat]);
+  }, [fallbackTex, vortexTex, vortexGeo, sliceGeo, domeGeo, sliceMat, domeMat]);
 
   useFrame((_, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
     const p = THREE.MathUtils.clamp(scrollProgress, 0, 1);
-
-    const jetSpeedNorm = THREE.MathUtils.clamp(snapshot.ukSurface.jetSpeed250HpaMs / 45, 0.35, 1.8);
-    jetTex.offset.x -= dt * 0.42 * jetSpeedNorm;
-
-    if (jetMeshRef.current) {
-      const mat = jetMeshRef.current.material as THREE.MeshBasicMaterial;
-      const beat1Vis = 1 - THREE.MathUtils.smoothstep(p, 0.16, 0.3);
-      const beat5Vis = THREE.MathUtils.smoothstep(p, 0.78, 0.9);
-      mat.opacity = 0.24 + 0.72 * Math.max(beat1Vis, beat5Vis);
-    }
 
     if (!vis.current) vis.current = { ...visTarget };
     easeVisuals(vis.current, visTarget, dt);
@@ -380,16 +305,7 @@ export function ProceduralAtmosphere({
         <ProceduralEarthPBR />
       </Suspense>
 
-      <mesh ref={jetMeshRef} name="JetStream_Ribbon" geometry={jetGeo}>
-        <meshBasicMaterial
-          map={jetTex}
-          transparent
-          opacity={0.9}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
+      <LiveJetRibbon snapshot={snapshot} scrollProgress={scrollProgress} />
 
       <mesh ref={vortexMeshRef} name="PolarVortex_Mesh" geometry={vortexGeo}>
         <meshStandardMaterial
