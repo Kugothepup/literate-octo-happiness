@@ -3,6 +3,7 @@ import type * as THREE from 'three';
 import type { AtmosphereSnapshot, BeatId } from '../types/weather';
 import type { AnchorName } from '../scene/cameraWaypoints';
 import { PolarTempSparkline, VerticalProfileChart, ZonalWindSparkline } from './Sparklines';
+import { jetAt } from '../services/jetTrack';
 
 /**
  * The figures for each beat. On wider screens they float over the globe, pinned to a place.
@@ -83,15 +84,24 @@ function UkPanel({ snapshot, surface, width }: PanelProps) {
 
 function JetPanel({ snapshot, surface, width }: PanelProps) {
   const uk = snapshot.ukSurface;
+  // With a live track: the jet's core where it passes the UK's longitude. Without one: the
+  // 250 hPa wind over the Highlands.
+  const core = snapshot.jetTrack && snapshot.jetTrack.length > 1 ? jetAt(snapshot.jetTrack, -4.7) : null;
+  const speed = core ? core.speedMs : uk.jetSpeed250HpaMs;
   return (
     <div className={panelClass(surface, 'border-sky-500/40', width)}>
       <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-sky-300">
-        <span>Jet stream</span>
+        <span>{core ? 'Jet stream core' : 'Jet stream'}</span>
         <span>250 hPa</span>
       </div>
-      <div className="mt-1 text-base font-semibold font-mono text-white">{uk.jetSpeed250HpaMs.toFixed(1)} m/s</div>
+      <div className="mt-1 text-base font-semibold font-mono text-white">
+        {speed.toFixed(1)} m/s
+        <span className="ml-1.5 text-xs font-normal text-slate-400">{Math.round(speed * 2.23694)} mph</span>
+      </div>
       <div className="text-[11px] font-mono text-slate-400">
-        {Math.round(uk.jetSpeed250HpaMs * 2.23694)} mph · from the {compassFrom(uk.jetDirection250HpaDeg)}
+        {core
+          ? `At ${Math.round(core.latDeg)}°N where it passes the UK’s longitude`
+          : `Over the Highlands · from the ${compassFrom(uk.jetDirection250HpaDeg)}`}
       </div>
     </div>
   );

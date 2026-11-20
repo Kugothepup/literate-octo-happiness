@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { initialModelSource } from '../lib/modelPreference';
+import { LiveJetRibbon } from './LiveJetRibbon';
 import type { AtmosphereSnapshot } from '../types/weather';
 import {
   ANCHOR_NAMES,
@@ -12,7 +13,6 @@ import {
 import {
   createAtmosphereSliceMaterial,
   createBlockingDomeMaterial,
-  createJetStreamTexture,
   createVortexTexture,
 } from './materials';
 import {
@@ -40,7 +40,6 @@ export function BlenderAtmosphere({
   const gltf = useGLTF(MODEL_URL);
 
   const sceneClone = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
-  const jetTexture = useMemo(() => createJetStreamTexture(), []);
   const vortexTexture = useMemo(() => createVortexTexture(), []);
   const sliceMaterial = useMemo(() => createAtmosphereSliceMaterial(), []);
   const domeMaterial = useMemo(() => createBlockingDomeMaterial(), []);
@@ -79,17 +78,9 @@ export function BlenderAtmosphere({
   useEffect(() => {
     const { meshes } = nodesMap;
 
+    // The model's fixed jet ribbon is replaced by <LiveJetRibbon>, which follows the data.
     const jetMesh = meshes['JetStream_Ribbon'];
-    if (jetMesh) {
-      jetMesh.material = new THREE.MeshBasicMaterial({
-        map: jetTexture,
-        transparent: true,
-        opacity: 0.9,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-      });
-    }
+    if (jetMesh) jetMesh.visible = false;
 
     const vortexMesh = meshes['PolarVortex_Mesh'];
     if (vortexMesh) {
@@ -117,32 +108,19 @@ export function BlenderAtmosphere({
     if (domeMesh) {
       domeMesh.material = domeMaterial;
     }
-  }, [nodesMap, jetTexture, vortexTexture, sliceMaterial, domeMaterial]);
+  }, [nodesMap, vortexTexture, sliceMaterial, domeMaterial]);
 
   useEffect(() => {
     return () => {
-      jetTexture.dispose();
       vortexTexture.dispose();
       sliceMaterial.dispose();
       domeMaterial.dispose();
     };
-  }, [jetTexture, vortexTexture, sliceMaterial, domeMaterial]);
+  }, [vortexTexture, sliceMaterial, domeMaterial]);
 
   useFrame((_, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
     const p = THREE.MathUtils.clamp(scrollProgress, 0, 1);
-
-    // 1. Jet Stream flowing speed driven by live 250 hPa jet velocity
-    const jetSpeedNorm = THREE.MathUtils.clamp(snapshot.ukSurface.jetSpeed250HpaMs / 45, 0.35, 1.8);
-    jetTexture.offset.x -= dt * 0.42 * jetSpeedNorm;
-
-    const jetMesh = nodesMap.meshes['JetStream_Ribbon'];
-    if (jetMesh && jetMesh.material instanceof THREE.MeshBasicMaterial) {
-      // Emphasize jet stream in Beat 1 and Beat 5
-      const beat1Vis = 1 - THREE.MathUtils.smoothstep(p, 0.16, 0.30);
-      const beat5Vis = THREE.MathUtils.smoothstep(p, 0.78, 0.90);
-      jetMesh.material.opacity = 0.24 + 0.72 * Math.max(beat1Vis, beat5Vis);
-    }
 
     // 2. Polar vortex: resting shape, spin, colour and glow follow the selected data;
     //    the beat 3 squeeze-and-shove animation plays on top.
@@ -177,7 +155,12 @@ export function BlenderAtmosphere({
     domeMaterial.uniforms.uHeight.value = dome.height;
   });
 
-  return <primitive object={sceneClone} />;
+  return (
+    <group>
+      <primitive object={sceneClone} />
+      <LiveJetRibbon snapshot={snapshot} scrollProgress={scrollProgress} />
+    </group>
+  );
 }
 
 // Only fetch the 4.5 MB model early if this viewer will actually see it.

@@ -1,4 +1,5 @@
 import baseline from '../data/historicalBaseline.json';
+import { jetGridUrl, parseJetTrack } from './jetTrack';
 import fallbackJson from '../data/fallbackData.json';
 import type {
   AtmosphereSnapshot,
@@ -8,7 +9,7 @@ import type {
   ZonalWindPoint,
 } from '../types/weather';
 
-const CACHE_KEY = 'ssw_live_atmosphere_v2';
+const CACHE_KEY = 'ssw_live_atmosphere_v3'; // v3 adds the jet stream track
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 const RING_LONGITUDES = [-135, -90, -45, 0, 45, 90, 135, 180] as const;
@@ -145,6 +146,13 @@ export async function fetchLiveAtmosphere(forceRefresh = false): Promise<Atmosph
 
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 9000);
+
+  // Request C: 250 hPa wind grid for the jet stream's track. Optional: if it fails, the rest of
+  // the live data still loads and the globe falls back to the illustrative path.
+  const jetPromise = fetch(jetGridUrl(), { signal: controller.signal })
+    .then((r) => (r.ok ? r.json() : undefined))
+    .then((json) => (json ? parseJetTrack(json) : undefined))
+    .catch(() => undefined);
 
   try {
     const [surfaceRes, ringRes] = await Promise.all([
@@ -331,6 +339,8 @@ export async function fetchLiveAtmosphere(forceRefresh = false): Promise<Atmosph
       `Over the pole, 30 km up: ${polarCapTemp10.toFixed(1)}°C, ${anomAbs}°C ${anomWord} than a typical November.` +
       (polarAnomC >= 12 ? ' A jump like that is the signature of a sudden warming.' : '');
 
+    const jetTrack = await jetPromise;
+
     const snapshot: AtmosphereSnapshot = {
       mode: 'live',
       fetchSource: 'live-api',
@@ -391,6 +401,7 @@ export async function fetchLiveAtmosphere(forceRefresh = false): Promise<Atmosph
       },
       verticalProfile,
       battlegroundSummary,
+      jetTrack,
     };
 
     try {

@@ -3,6 +3,7 @@ import baseline from '../data/historicalBaseline.json';
 import { BEAT_DESCRIPTORS } from '../scene/cameraWaypoints';
 import type { AtmosphereSnapshot, BeatId, WeatherMode } from '../types/weather';
 import { BeatFigures } from './TooltipCards';
+import { jetAt } from '../services/jetTrack';
 
 interface ScrollStoryProps {
   activeBeat: BeatId;
@@ -38,6 +39,17 @@ function battlegroundReading(scandiHpa: number, ukHpa: number): string {
   if (scandiHpa >= 1022 && scandiHpa > ukHpa) return 'High pressure over Scandinavia: a block is in place.';
   if (scandiHpa > ukHpa) return 'Pressure is higher to the east than over the UK.';
   return 'No Scandinavian high today. The dome on the globe shows what one would look like.';
+}
+
+/** Where the jet stream runs relative to the UK (about 50–59°N), and what that usually means. */
+function jetReading(snapshot: AtmosphereSnapshot): string {
+  if (!snapshot.jetTrack || snapshot.jetTrack.length < 2) {
+    return 'The ribbon on the globe shows the jet’s path in mid-November, south of the UK.';
+  }
+  const lat = jetAt(snapshot.jetTrack, -4.7).latDeg;
+  if (lat < 50) return 'The jet stream is running south of the UK, leaving it on the colder, northern side.';
+  if (lat > 59) return 'The jet stream is running north of the UK, leaving it on the milder, southern side.';
+  return 'The jet stream is running across the UK, which usually means changeable, often wet and windy weather.';
 }
 
 /** One plain-English line on what the freezing level means on the ground. */
@@ -134,7 +146,15 @@ export function ScrollStory({
                 <span className="block font-mono text-[11px] uppercase tracking-wider text-slate-400">
                   {dataLabel}
                 </span>
-                {beat.id === 1 && <p>{freezingReading(snapshot.ukSurface.freezingLevelM)}</p>}
+                {beat.id === 1 && (
+                  <>
+                    <p>{jetReading(snapshot)}</p>
+                    <p>{freezingReading(snapshot.ukSurface.freezingLevelM)}</p>
+                    {snapshot.jetTrack && (
+                      <p className="text-slate-400">On the globe, the ribbon follows this track, wider where the jet is faster.</p>
+                    )}
+                  </>
+                )}
                 {beat.id === 2 && (
                   <>
                     <p>{vortexReading(s60.zonalMeanWindMs, s60.isReversed)}</p>

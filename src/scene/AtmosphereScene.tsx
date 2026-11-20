@@ -13,6 +13,7 @@ import { BlenderAtmosphere } from './BlenderAtmosphere';
 import { ProceduralAtmosphere } from './ProceduralAtmosphere';
 import { createAtmosphereHaloMaterial, createHorizonGlowMaterial } from './materials';
 import { TooltipOverlay3D } from '../components/TooltipCards';
+import { jetAnchorPosition } from './LiveJetRibbon';
 
 interface SceneErrorBoundaryProps {
   fallback: ReactNode;
@@ -123,6 +124,12 @@ export function AtmosphereScene({
     };
   }, [outerHaloMat, horizonGlowMat]);
 
+  // The jet ribbon follows the data, so its tooltip anchor does too.
+  const tooltipAnchors = useMemo(
+    () => ({ ...anchors, Anchor_JetStream: jetAnchorPosition(snapshot) }),
+    [anchors, snapshot]
+  );
+
   const handleAnchorsResolved = useCallback((resolved: Record<AnchorName, THREE.Vector3>) => {
     setAnchors(resolved);
   }, []);
@@ -187,7 +194,7 @@ export function AtmosphereScene({
           <TooltipOverlay3D
             activeBeat={activeBeat}
             scrollProgress={scrollProgress}
-            anchors={anchors}
+            anchors={tooltipAnchors}
             snapshot={snapshot}
           />
         )}

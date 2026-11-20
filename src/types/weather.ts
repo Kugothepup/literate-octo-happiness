@@ -46,6 +46,13 @@ export interface WaveMetrics {
   historicPercentileEarlyNov: number;
 }
 
+/** One point on the jet stream's core: where the 250 hPa westerly wind is strongest at that longitude. */
+export interface JetTrackPoint {
+  lonDeg: number;
+  latDeg: number;
+  speedMs: number;
+}
+
 export interface AtmosphereSnapshot {
   mode: WeatherMode;
   fetchSource: FetchSource;
@@ -98,6 +105,8 @@ export interface AtmosphereSnapshot {
   waves: WaveMetrics;
   verticalProfile: VerticalLevelPoint[];
   battlegroundSummary: string;
+  /** Today's jet stream track (live data only). Without it the globe shows the illustrative November path. */
+  jetTrack?: JetTrackPoint[];
 }
 
 export interface BeatDescriptor {
