@@ -4,6 +4,7 @@ import { SOURCE_VIDEO } from '../data/source';
 import { getCaseStudySnapshot } from '../services/weatherData';
 import type { AtmosphereSnapshot, BeatId, WeatherMode } from '../types/weather';
 import { VideoCredit } from './VideoCredit';
+import { scrollToId } from '../lib/scroll';
 
 interface BriefingEditorialProps {
   snapshot: AtmosphereSnapshot;
@@ -23,12 +24,7 @@ const SECTION_LINKS = [
 const CLIM = baseline.novemberClimatology;
 const EVENT = getCaseStudySnapshot();
 
-function jumpToSection(id: string) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
+const jumpToSection = scrollToId;
 
 function signed(n: number, digits = 1): string {
   return `${n > 0 ? '+' : ''}${n.toFixed(digits)}`;
@@ -80,10 +76,10 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
         <div className="mx-auto max-w-5xl px-4 sm:px-8 pt-14 pb-8 space-y-16">
           {/* Header */}
           <header className="space-y-5">
-            <h2 id="briefing-title" className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+            <h2 id="briefing-title" className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight text-balance">
               Inside November’s polar vortex shock
             </h2>
-            <p className="text-base sm:text-lg text-slate-300 max-w-3xl">
+            <p className="text-base sm:text-lg text-slate-300 max-w-[60ch] text-pretty">
               How the vortex was knocked off course, how unusual that was, and what it could mean for the UK’s
               weather into December.
             </p>
@@ -110,41 +106,41 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
           <section id="briefing-ssw" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
               <Waves className="w-5 h-5 text-violet-400" aria-hidden="true" />
-              <h3 className="text-2xl font-semibold text-white">What happened 30 km up</h3>
+              <h3 className="text-2xl font-semibold text-white text-balance">What happened 30 km up</h3>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className="text-lg font-semibold text-white">How a polar vortex breaks down</h4>
+                  <h4 className="text-lg font-semibold text-white text-balance">How a polar vortex breaks down</h4>
                   <button
                     type="button"
                     onClick={() => onJumpBeat(3)}
-                    className="text-xs font-mono text-violet-300 hover:text-violet-200 transition shrink-0"
+                    className="text-xs font-medium text-violet-300 hover:text-violet-200 transition shrink-0"
                   >
                     Watch it in 3D →
                   </button>
                 </div>
-                <p className="text-sm leading-relaxed text-slate-300">
+                <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                   About 30 km above the Arctic, a ring of westerly winds circles the North Pole every autumn and
                   winter. It keeps the coldest air penned in over the pole. This is the polar vortex.
                 </p>
-                <p className="text-sm leading-relaxed text-slate-300">
+                <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                   Sometimes the ring gets knocked off balance. Its winds slow down or even turn round, and the air
                   inside sinks and heats up fast. That’s why it’s called a sudden stratospheric warming, or SSW.
                 </p>
 
-                <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-4 space-y-3 font-mono text-xs">
+                <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-4 space-y-3 text-[13px] leading-snug">
                   <div className="rounded-lg border border-indigo-500/40 bg-indigo-500/10 px-3 py-2 text-center text-indigo-200 font-semibold">
                     The polar vortex, 30 km up
                   </div>
                   <div className="grid sm:grid-cols-2 gap-2.5 pl-3 border-l-2 border-slate-700">
                     <div className="rounded-lg border border-violet-500/35 bg-violet-500/10 p-2.5 text-slate-200">
-                      <span className="block text-[10px] text-violet-300 font-semibold">Wave 2 · late October</span>
+                      <span className="block font-mono text-[11px] text-violet-300 font-semibold mb-0.5">Wave 2 · late October</span>
                       Squeezed it into a dumbbell shape, slowing it and splitting it in two
                     </div>
                     <div className="rounded-lg border border-rose-500/35 bg-rose-500/10 p-2.5 text-slate-200">
-                      <span className="block text-[10px] text-rose-300 font-semibold">Wave 1 · early November</span>
+                      <span className="block font-mono text-[11px] text-rose-300 font-semibold mb-0.5">Wave 1 · early November</span>
                       One huge ridge pushed what was left off the pole, towards Russia
                     </div>
                   </div>
@@ -155,11 +151,11 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3 self-start">
-                <h4 className="text-lg font-semibold text-white">Major or minor?</h4>
-                <p className="text-sm leading-relaxed text-slate-300">
+                <h4 className="text-lg font-semibold text-white text-balance">Major or minor?</h4>
+                <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                   Probably major. That means the winds didn’t just slow down: they reversed and blew from the east.
                 </p>
-                <p className="text-sm leading-relaxed text-slate-300">
+                <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                   It won’t be confirmed until the data has been formally re-analysed. For our weather, though, it
                   makes little difference. Winds that reverse and winds that nearly stop have much the same effect
                   at the surface.
@@ -172,10 +168,10 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
           <section id="briefing-unusual" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
               <BarChart3 className="w-5 h-5 text-violet-400" aria-hidden="true" />
-              <h3 className="text-2xl font-semibold text-white">How unusual was it?</h3>
+              <h3 className="text-2xl font-semibold text-white text-balance">How unusual was it?</h3>
             </div>
 
-            <p className="text-sm sm:text-base leading-relaxed text-slate-300 max-w-3xl">
+            <p className="text-base leading-relaxed text-slate-300 max-w-[65ch] text-pretty">
               At the end of October, <strong className="text-white">Nick Silkstone</strong>, Deputy Chief
               Meteorologist at the Met Office, checked how rare this was. He compared the waves with ERA5 records
               going back to the 1940s, including very strong El Niño years.
@@ -185,7 +181,7 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h4 className="text-sm font-semibold text-white">How big were the waves?</h4>
-                  <div className="flex items-center gap-3 text-[10px] font-mono text-slate-400">
+                  <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
                     <span className="inline-flex items-center gap-1">
                       <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-400" aria-hidden="true" />
                       Wave 1
@@ -254,8 +250,8 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
 
             <blockquote className="border-l-2 border-violet-400 pl-4 italic text-sm text-slate-300 max-w-3xl">
               &ldquo;A wave it was a significantly strong wave two, the strongest in this data record which goes back to
-              the 1940s... when you combine the two together much stronger than anything we&apos;d had in the past and
-              much stronger than previous El Nino years...&rdquo;
+              the 1940s… when you combine the two together much stronger than anything we’d had in the past and
+              much stronger than previous El Niño years…&rdquo;
               <footer className="mt-1 not-italic text-xs font-mono text-violet-300">
                 — {SOURCE_VIDEO.presenter}, Met Office
               </footer>
@@ -266,13 +262,13 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
           <section id="briefing-outlook" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
               <Compass className="w-5 h-5 text-amber-400" aria-hidden="true" />
-              <h3 className="text-2xl font-semibold text-white">Into December</h3>
+              <h3 className="text-2xl font-semibold text-white text-balance">Into December</h3>
             </div>
 
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h4 className="text-lg font-semibold text-white">The drip down</h4>
-                <div className="flex items-center gap-3 text-xs font-mono">
+                <h4 className="text-lg font-semibold text-white text-balance">The drip down</h4>
+                <div className="flex items-center gap-3 text-xs">
                   <button
                     type="button"
                     onClick={() => onJumpBeat(4)}
@@ -289,15 +285,15 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
                   </button>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed text-slate-300">
+              <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                 The slowdown doesn’t stay up high. Wind readings at{' '}
                 <span className="font-mono text-sky-200">60°N</span>, the latitude of Shetland, show it working its
                 way down through the atmosphere, layer by layer.
               </p>
               <blockquote className="border-l-2 border-sky-400 pl-4 italic text-sm text-slate-300">
-                &ldquo;...what you can see is that those darker blues are sort of dripping down, oozing through the
-                atmosphere and then impacting the weather nearer the surface and we&apos;re going to feel the influence of
-                that slowing down of that usual westerly wind...&rdquo;
+                &ldquo;…what you can see is that those darker blues are sort of dripping down, oozing through the
+                atmosphere and then impacting the weather nearer the surface and we’re going to feel the influence of
+                that slowing down of that usual westerly wind…&rdquo;
                 <footer className="mt-1 not-italic text-xs font-mono text-sky-300">
                   — {SOURCE_VIDEO.presenter}, Met Office
                 </footer>
@@ -305,28 +301,28 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-lg font-semibold text-white">What the forecasts showed on 17 November</h4>
+              <h4 className="text-lg font-semibold text-white text-balance">What the forecasts showed on 17 November</h4>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/65 p-5 space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-sky-300">From 23 November</span>
-                  <p className="text-sm leading-relaxed text-slate-300">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-sky-300">From 23 November</span>
+                  <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                     High pressure building to the east, over Scandinavia, with low pressure to the west. That brings
                     milder southerly winds for a while, but a small shift could swing in colder easterlies.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-amber-500/35 bg-slate-900/65 p-5 space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300">Early December</span>
-                  <p className="text-sm leading-relaxed text-slate-300">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-amber-300">Early December</span>
+                  <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                     Forecast models suggest high pressure moving over or close to the UK. That raises the chance of
                     easterly winds and colder weather, the classic sign at ground level two to six weeks after a
                     stratospheric shock.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-violet-500/35 bg-slate-900/65 p-5 space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-violet-300">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-violet-300">
                     A second warming?
                   </span>
-                  <p className="text-sm leading-relaxed text-slate-300">
+                  <p className="text-[15px] leading-relaxed text-slate-300 text-pretty">
                     European (ECMWF) forecasts show the vortex winds recovering, but only to a weak westerly. A
                     minority of model runs suggest another slowdown, or even a reversal, in late December.
                   </p>
@@ -339,9 +335,9 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
           <section id="briefing-now" className="scroll-mt-24 space-y-6">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
               <Gauge className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-              <h3 className="text-2xl font-semibold text-white">Then and now</h3>
+              <h3 className="text-2xl font-semibold text-white text-balance">Then and now</h3>
             </div>
-            <p className="text-sm sm:text-base leading-relaxed text-slate-300 max-w-3xl">
+            <p className="text-base leading-relaxed text-slate-300 max-w-[65ch] text-pretty">
               Has the atmosphere settled down since November? Compare a typical November, the event itself and
               today’s readings.
             </p>
@@ -384,7 +380,7 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
                 <button
                   type="button"
                   onClick={() => onToggleMode('live')}
-                  className="rounded-lg border border-emerald-400/35 bg-emerald-500/10 px-2.5 py-1 font-mono text-emerald-200 hover:bg-emerald-500/20 transition"
+                  className="rounded-lg border border-emerald-400/35 bg-emerald-500/10 px-2.5 py-1 font-medium text-emerald-200 hover:bg-emerald-500/20 transition"
                 >
                   Show today’s readings
                 </button>
@@ -395,7 +391,7 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
           {/* Credits */}
           <footer className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-2 text-xs text-slate-300 max-w-2xl">
-              <div className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Sources and credit</div>
+              <div className="text-[11px] font-mono uppercase tracking-widest text-slate-400">Sources and credit</div>
               <p>
                 Story and quotes: the Met Office’s Deep Dive of {SOURCE_VIDEO.published}, “Stratosphere downwards”,
                 presented by {SOURCE_VIDEO.presenter}.{' '}
@@ -418,7 +414,7 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
             <button
               type="button"
               onClick={() => onJumpBeat(1)}
-              className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/15 hover:bg-sky-500/25 px-4 py-2 text-xs font-mono text-sky-200 transition"
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/15 hover:bg-sky-500/25 px-4 py-2 text-xs font-medium text-sky-200 transition"
             >
               <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
               Back to the globe

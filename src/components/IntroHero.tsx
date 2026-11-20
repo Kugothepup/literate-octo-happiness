@@ -23,15 +23,15 @@ export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
           An explainer in five scrolls · November 2026
         </p>
 
-        <h1 id="intro-title" className="text-4xl sm:text-5xl font-bold tracking-tight text-white leading-[1.05]">
+        <h1 id="intro-title" className="text-4xl sm:text-5xl font-bold tracking-tight text-white leading-[1.05] text-balance">
           The cold that starts 30&nbsp;km&nbsp;up
         </h1>
 
-        <p className="text-base sm:text-lg leading-relaxed text-slate-200">
+        <p className="text-base sm:text-lg leading-relaxed text-slate-200 text-pretty">
           In early November, the winds that circle high above the North Pole took their biggest early-season
           battering since records began in the 1940s.
         </p>
-        <p className="text-sm sm:text-base leading-relaxed text-slate-300">
+        <p className="text-sm sm:text-base leading-relaxed text-slate-300 text-pretty">
           Scroll to follow that shock down to the ground, and see why it raises the odds of a cold spell this
           December without promising one.
         </p>
@@ -40,7 +40,7 @@ export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
           <button
             type="button"
             onClick={onStart}
-            className="inline-flex items-center gap-2 rounded-xl bg-sky-500/20 border border-sky-400/50 px-4 py-2.5 text-sm font-medium text-sky-100 hover:bg-sky-500/30 transition"
+            className="inline-flex items-center gap-2 rounded-xl bg-sky-500/20 border border-sky-400/50 px-4 py-2.5 text-sm font-medium text-sky-100 hover:bg-sky-500/30 transition-[transform,background-color] active:scale-[0.96]"
           >
             Start at ground level
             <ChevronDown className="w-4 h-4 animate-bounce motion-reduce:animate-none" aria-hidden="true" />
@@ -54,11 +54,11 @@ export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
           </button>
         </div>
 
-        <p className="text-[11px] font-mono text-slate-500" aria-live="polite">
+        <p className="text-[11px] font-mono text-slate-400" aria-live="polite">
           {loading ? `Loading the globe… ${Math.round(progress)}%` : 'Globe ready. Scroll down to begin.'}
         </p>
 
-        <p className="text-[11px] text-slate-500 max-w-md">
+        <p className="text-xs text-slate-400 max-w-md text-pretty">
           Based on the Met Office’s{' '}
           <a
             href={SOURCE_VIDEO.url}

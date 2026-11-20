@@ -33,7 +33,7 @@ export function VideoCredit() {
               src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
               alt=""
               loading="lazy"
-              className="h-full w-full object-cover opacity-80 group-hover:opacity-100 transition"
+              className="h-full w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity outline outline-1 -outline-offset-1 outline-white/10"
             />
             <span className="absolute inset-0 flex items-center justify-center">
               <span className="inline-flex items-center gap-2 rounded-full bg-slate-950/85 border border-slate-700 px-4 py-2 text-sm text-white group-hover:border-sky-400/60 transition">

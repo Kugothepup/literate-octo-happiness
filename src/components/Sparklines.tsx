@@ -145,10 +145,10 @@ export function VerticalProfileChart({ levels }: VerticalProfileChartProps) {
           return (
             <div
               key={lvl.pressureHpa}
-              className="grid grid-cols-[44px_1fr] items-center gap-1.5 text-[10px]"
+              className="grid grid-cols-[56px_1fr] items-center gap-1.5 text-[11px]"
             >
-              <span className="font-mono text-slate-500 text-right">{lvl.pressureHpa} hPa</span>
-              <span className="font-mono text-slate-500">No live data at this height</span>
+              <span className="font-mono text-slate-400 text-right">{lvl.pressureHpa} hPa</span>
+              <span className="font-mono text-slate-400">No live data at this height</span>
             </div>
           );
         }
@@ -157,7 +157,7 @@ export function VerticalProfileChart({ levels }: VerticalProfileChartProps) {
         return (
           <div
             key={lvl.pressureHpa}
-            className="grid grid-cols-[44px_1fr_42px_40px] items-center gap-1.5 text-[10px]"
+            className="grid grid-cols-[56px_1fr_44px_40px] items-center gap-1.5 text-[11px]"
           >
             <span className="font-mono text-slate-400 text-right">{lvl.pressureHpa} hPa</span>
             <div className="h-2 bg-slate-800/90 rounded-full overflow-hidden">

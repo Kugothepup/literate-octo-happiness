@@ -84,13 +84,13 @@ export function ScrollStory({
             className="min-h-screen flex items-end md:items-center px-4 sm:px-8 pb-10 pt-24 md:py-24"
           >
             <article
-              className={`pointer-events-auto max-w-md rounded-2xl border backdrop-blur-xl p-5 sm:p-6 shadow-2xl transition-all duration-300 ${
+              className={`pointer-events-auto max-w-md rounded-2xl border backdrop-blur-xl p-5 sm:p-6 shadow-2xl transition-[opacity,transform,border-color,background-color] duration-300 ${
                 isCurrent
                   ? 'border-sky-400/45 bg-slate-950/82 opacity-100 translate-y-0'
                   : 'border-slate-800/70 bg-slate-950/60 opacity-70 translate-y-1'
               }`}
             >
-              <div className="flex items-center justify-between gap-2 text-[10px] font-mono tracking-widest uppercase text-sky-300">
+              <div className="flex items-center justify-between gap-2 text-[11px] font-mono tracking-widest uppercase text-sky-300">
                 <span>{beat.kicker}</span>
                 <span className="rounded-md bg-slate-900 px-2 py-0.5 border border-slate-700/80 text-slate-300 normal-case tracking-normal">
                   {beat.pressureLabel}
@@ -99,24 +99,24 @@ export function ScrollStory({
 
               <h2
                 id={`beat-${beat.id}-title`}
-                className="mt-2.5 text-xl sm:text-2xl font-semibold tracking-tight text-white"
+                className="mt-2.5 text-xl sm:text-2xl font-semibold tracking-tight text-white text-balance"
               >
                 {beat.title}
               </h2>
-              <p className="mt-0.5 text-xs font-medium text-sky-200/80">{beat.subtitle}</p>
+              <p className="mt-0.5 text-[13px] font-medium text-sky-200/80 text-pretty">{beat.subtitle}</p>
 
-              <p className="mt-3 text-sm leading-relaxed text-slate-300">{beat.body}</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-slate-300 text-pretty">{beat.body}</p>
 
               <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/75 px-3.5 py-2.5 text-xs text-slate-200">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-amber-300 block mb-0.5">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-amber-300 block mb-0.5">
                   Why it matters
                 </span>
                 {beat.takeaway}
               </div>
 
               {/* What the data says for this beat, live or case study */}
-              <div className="mt-4 pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-0.5">
-                <span className="block font-mono text-[9.5px] uppercase tracking-wider text-slate-500">
+              <div className="mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-400 space-y-0.5">
+                <span className="block font-mono text-[11px] uppercase tracking-wider text-slate-400">
                   {dataLabel}
                 </span>
                 {beat.id === 1 && (
@@ -133,10 +133,10 @@ export function ScrollStory({
                       <strong className={s60.isReversed ? 'text-rose-300' : 'text-sky-300'}>
                         {signed(s60.zonalMeanWindMs)} m/s
                       </strong>{' '}
-                      <span className="text-slate-500">({Math.round(Math.abs(s60.zonalMeanWindMs) * MS_TO_MPH)} mph)</span>
+                      <span className="text-slate-400">({Math.round(Math.abs(s60.zonalMeanWindMs) * MS_TO_MPH)} mph)</span>
                     </p>
                     <p>{vortexReading(s60.zonalMeanWindMs, s60.isReversed)}</p>
-                    <p className="text-slate-500">On the globe, the ring’s spin, colour and shape follow these readings.</p>
+                    <p className="text-slate-400">On the globe, the ring’s spin, colour and shape follow these readings.</p>
                   </>
                 )}
                 {beat.id === 3 && (
@@ -164,7 +164,7 @@ export function ScrollStory({
                 {beat.id === 1 && (
                   <>
                     <p>{freezingReading(snapshot.ukSurface.freezingLevelM)}</p>
-                    <p className="text-[10px] font-mono text-slate-500">Data for {validLabel} UTC</p>
+                    <p className="text-[11px] font-mono text-slate-400">Data for {validLabel} UTC</p>
                   </>
                 )}
               </div>
@@ -174,7 +174,7 @@ export function ScrollStory({
                   <button
                     type="button"
                     onClick={() => onToggleMode(mode === 'live' ? 'case-study' : 'live')}
-                    className="inline-flex items-center rounded-lg border border-violet-400/35 bg-violet-500/10 px-2.5 py-1 text-[11px] font-mono text-violet-200 hover:bg-violet-500/20 transition"
+                    className="inline-flex items-center rounded-lg border border-violet-400/35 bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-200 hover:bg-violet-500/20 transition-[transform,background-color] active:scale-[0.96]"
                   >
                     {mode === 'live' ? compare.toEvent : compare.toToday}
                   </button>
@@ -185,7 +185,7 @@ export function ScrollStory({
                   <button
                     type="button"
                     onClick={() => onJumpBeat(next.id)}
-                    className="inline-flex items-center gap-1 text-[11px] font-mono text-sky-300 hover:text-sky-200 transition"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-sky-300 hover:text-sky-200 transition-colors"
                   >
                     <span>Next: {next.shortTitle}</span>
                     <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
@@ -195,7 +195,7 @@ export function ScrollStory({
                     <button
                       type="button"
                       onClick={onReadBriefing}
-                      className="inline-flex items-center gap-1 rounded-lg bg-sky-500/15 border border-sky-400/35 px-2.5 py-1 text-[11px] font-mono text-sky-200 hover:bg-sky-500/25 transition"
+                      className="inline-flex items-center gap-1 rounded-lg bg-sky-500/15 border border-sky-400/35 px-2.5 py-1 text-xs font-medium text-sky-200 hover:bg-sky-500/25 transition-[transform,background-color] active:scale-[0.96]"
                     >
                       <span>Read the full story</span>
                       <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />

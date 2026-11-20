@@ -8,6 +8,7 @@ import { AltitudeGauge } from './components/AltitudeGauge';
 import { ScrollStory } from './components/ScrollStory';
 import { BriefingEditorial } from './components/BriefingEditorial';
 import { IntroHero } from './components/IntroHero';
+import { scrollToId } from './lib/scroll';
 
 export default function App() {
   const storyRef = useRef<HTMLDivElement>(null);
@@ -69,19 +70,9 @@ export default function App() {
     };
   }, []);
 
-  const handleJumpBeat = useCallback((beat: BeatId) => {
-    const el = document.getElementById(`beat-${beat}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
+  const handleJumpBeat = useCallback((beat: BeatId) => scrollToId(`beat-${beat}`), []);
 
-  const handleJumpEditorial = useCallback(() => {
-    const el = document.getElementById('briefing-editorial');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
+  const handleJumpEditorial = useCallback(() => scrollToId('briefing-editorial'), []);
 
   const activeBeat = progressToBeat(scrollProgress);
 

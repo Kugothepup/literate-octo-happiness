@@ -53,8 +53,8 @@ function getSourceBadge(fetchSource: FetchSource): { label: string; cls: string;
     case 'cached-live':
       return {
         label: 'LIVE',
-        cls: 'bg-sky-500/15 text-sky-300 border-sky-500/40',
-        dot: 'bg-sky-400',
+        cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
+        dot: 'bg-emerald-400',
       };
     case 'offline-fallback':
       return {
@@ -110,13 +110,13 @@ export function TopHud({
                 STRATOSPHERE DOWNWARDS
               </span>
               <span
-                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-mono font-semibold border ${badge.cls}`}
+                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-mono font-semibold border ${badge.cls}`}
               >
                 <span className={`inline-block w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                 {badge.label}
               </span>
             </div>
-            <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
+            <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
               <Clock className="w-3 h-3 text-slate-500 shrink-0" />
               <span className="truncate max-w-[300px] sm:max-w-[440px]">{pullText}</span>
             </div>
@@ -147,7 +147,7 @@ export function TopHud({
               onClick={() => onToggleMode('live')}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
                 mode === 'live'
-                  ? 'bg-sky-500/20 text-sky-200 border border-sky-400/40'
+                  ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -190,9 +190,9 @@ export function TopHud({
               aria-pressed={modelSource === 'glb'}
               title="Full 3D model (about 4.5 MB)"
               onClick={() => onToggleModelSource('glb')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
                 modelSource === 'glb'
-                  ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40'
+                  ? 'bg-slate-700/60 text-white border border-slate-500/60'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -203,9 +203,9 @@ export function TopHud({
               aria-pressed={modelSource === 'procedural'}
               title="Lighter model for slower devices"
               onClick={() => onToggleModelSource('procedural')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
                 modelSource === 'procedural'
-                  ? 'bg-amber-500/20 text-amber-200 border border-amber-400/40'
+                  ? 'bg-slate-700/60 text-white border border-slate-500/60'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
