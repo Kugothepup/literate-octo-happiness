@@ -33,10 +33,10 @@ interface ProceduralAtmosphereProps {
 
 function ProceduralEarthPBR() {
   const [albedoMap, normalMap, roughnessMap, emissiveMap] = useTexture([
-    '/textures/earth_albedo.png',
-    '/textures/earth_normal.png',
-    '/textures/earth_roughness.png',
-    '/textures/earth_emissive.png',
+    `${import.meta.env.BASE_URL}textures/earth_albedo.png`,
+    `${import.meta.env.BASE_URL}textures/earth_normal.png`,
+    `${import.meta.env.BASE_URL}textures/earth_roughness.png`,
+    `${import.meta.env.BASE_URL}textures/earth_emissive.png`,
   ]);
 
   useEffect(() => {

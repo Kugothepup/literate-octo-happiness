@@ -1,13 +1,16 @@
 import { ChevronDown } from 'lucide-react';
 import { useProgress } from '@react-three/drei';
 import { SOURCE_VIDEO } from '../data/source';
+import type { ModelSource } from '../types/weather';
 
 interface IntroHeroProps {
   onStart: () => void;
   onSkipToBriefing: () => void;
+  modelSource: ModelSource;
+  onUseSimpleModel: () => void;
 }
 
-export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
+export function IntroHero({ onStart, onSkipToBriefing, modelSource, onUseSimpleModel }: IntroHeroProps) {
   // Tracks Three.js loaders (GLB + textures) so the first screen never looks broken.
   const { active, progress } = useProgress();
   const loading = active && progress < 100;
@@ -56,6 +59,18 @@ export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
 
         <p className="text-[11px] font-mono text-slate-400" aria-live="polite">
           {loading ? `Loading the globe… ${Math.round(progress)}%` : 'Globe ready. Scroll down to begin.'}
+          {modelSource === 'glb' && (
+            <>
+              {' '}
+              <button
+                type="button"
+                onClick={onUseSimpleModel}
+                className="font-sans text-slate-300 underline underline-offset-2 hover:text-white"
+              >
+                Slow? Use the simple globe
+              </button>
+            </>
+          )}
         </p>
 
         <p className="text-xs text-slate-400 max-w-md text-pretty">

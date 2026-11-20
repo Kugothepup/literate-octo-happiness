@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
-import { ArrowUp, Box, Clock, CloudLightning, RefreshCw } from 'lucide-react';
-import type { AtmosphereSnapshot, BeatId, FetchSource, ModelSource, WeatherMode } from '../types/weather';
+import { ArrowUp, Clock, CloudLightning, RefreshCw } from 'lucide-react';
+import type { AtmosphereSnapshot, BeatId, FetchSource, WeatherMode } from '../types/weather';
 
 interface TopHudProps {
   mode: WeatherMode;
-  modelSource: ModelSource;
   snapshot: AtmosphereSnapshot;
   isLoading: boolean;
   inEditorial?: boolean;
   onJumpBeat?: (beat: BeatId) => void;
   onToggleMode: (next: WeatherMode) => void;
-  onToggleModelSource: (next: ModelSource) => void;
   onRefreshLive: () => void;
 }
 
@@ -74,13 +72,11 @@ function getSourceBadge(fetchSource: FetchSource): { label: string; cls: string;
 
 export function TopHud({
   mode,
-  modelSource,
   snapshot,
   isLoading,
   inEditorial = false,
   onJumpBeat,
   onToggleMode,
-  onToggleModelSource,
   onRefreshLive,
 }: TopHudProps) {
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -179,39 +175,6 @@ export function TopHud({
             )}
           </div>
 
-          <div
-            role="group"
-            aria-label="3D model"
-            className="flex items-center rounded-xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-1 shadow-lg"
-          >
-            <Box className="w-3.5 h-3.5 text-slate-400 ml-1.5 mr-1" aria-hidden="true" />
-            <button
-              type="button"
-              aria-pressed={modelSource === 'glb'}
-              title="Full 3D model (about 4.5 MB)"
-              onClick={() => onToggleModelSource('glb')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
-                modelSource === 'glb'
-                  ? 'bg-slate-700/60 text-white border border-slate-500/60'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Detailed
-            </button>
-            <button
-              type="button"
-              aria-pressed={modelSource === 'procedural'}
-              title="Lighter model for slower devices"
-              onClick={() => onToggleModelSource('procedural')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
-                modelSource === 'procedural'
-                  ? 'bg-slate-700/60 text-white border border-slate-500/60'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Simple
-            </button>
-          </div>
         </div>
       </div>
     </header>

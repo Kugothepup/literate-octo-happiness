@@ -2,7 +2,7 @@ import { ArrowUp, BarChart3, Compass, Gauge, Waves } from 'lucide-react';
 import baseline from '../data/historicalBaseline.json';
 import { SOURCE_VIDEO } from '../data/source';
 import { getCaseStudySnapshot } from '../services/weatherData';
-import type { AtmosphereSnapshot, BeatId, WeatherMode } from '../types/weather';
+import type { AtmosphereSnapshot, BeatId, ModelSource, WeatherMode } from '../types/weather';
 import { VideoCredit } from './VideoCredit';
 import { scrollToId } from '../lib/scroll';
 
@@ -10,6 +10,8 @@ interface BriefingEditorialProps {
   snapshot: AtmosphereSnapshot;
   mode: WeatherMode;
   onToggleMode: (next: WeatherMode) => void;
+  modelSource: ModelSource;
+  onChangeModel: (next: ModelSource) => void;
   onJumpBeat: (beat: BeatId) => void;
 }
 
@@ -30,7 +32,14 @@ function signed(n: number, digits = 1): string {
   return `${n > 0 ? '+' : ''}${n.toFixed(digits)}`;
 }
 
-export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: BriefingEditorialProps) {
+export function BriefingEditorial({
+  snapshot,
+  mode,
+  onToggleMode,
+  modelSource,
+  onChangeModel,
+  onJumpBeat,
+}: BriefingEditorialProps) {
   const maxBarWave1 = Math.max(...baseline.historicalComparisonBars.map((b) => b.wave1M));
   const isLive = snapshot.fetchSource === 'live-api' || snapshot.fetchSource === 'cached-live';
   const now = isLive ? snapshot : null;
@@ -409,6 +418,29 @@ export function BriefingEditorial({ snapshot, mode, onToggleMode, onJumpBeat }: 
               <p className="text-slate-400">
                 This is an independent explainer. It isn’t made by or affiliated with the Met Office.
               </p>
+              <div className="flex flex-wrap items-center gap-2 pt-2" role="group" aria-label="3D globe detail">
+                <span className="text-slate-400">3D globe:</span>
+                {(
+                  [
+                    ['glb', 'Detailed'],
+                    ['procedural', 'Simple, for slower devices'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={modelSource === value}
+                    onClick={() => onChangeModel(value)}
+                    className={`rounded-lg border px-2.5 py-1 transition-colors ${
+                      modelSource === value
+                        ? 'border-slate-500/60 bg-slate-700/60 text-white'
+                        : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <button

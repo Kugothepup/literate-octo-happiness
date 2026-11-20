@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { initialModelSource } from '../lib/modelPreference';
 import type { AtmosphereSnapshot } from '../types/weather';
 import {
   ANCHOR_NAMES,
@@ -29,12 +30,14 @@ interface BlenderAtmosphereProps {
   onAnchorsResolved?: (anchors: Record<AnchorName, THREE.Vector3>) => void;
 }
 
+const MODEL_URL = `${import.meta.env.BASE_URL}models/atmosphere.glb`;
+
 export function BlenderAtmosphere({
   scrollProgress,
   snapshot,
   onAnchorsResolved,
 }: BlenderAtmosphereProps) {
-  const gltf = useGLTF('/models/atmosphere.glb');
+  const gltf = useGLTF(MODEL_URL);
 
   const sceneClone = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const jetTexture = useMemo(() => createJetStreamTexture(), []);
@@ -177,5 +180,6 @@ export function BlenderAtmosphere({
   return <primitive object={sceneClone} />;
 }
 
-useGLTF.preload('/models/atmosphere.glb');
+// Only fetch the 4.5 MB model early if this viewer will actually see it.
+if (initialModelSource() === 'glb') useGLTF.preload(MODEL_URL);
 

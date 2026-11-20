@@ -2,12 +2,16 @@ import { ChevronDown } from 'lucide-react';
 import baseline from '../data/historicalBaseline.json';
 import { BEAT_DESCRIPTORS } from '../scene/cameraWaypoints';
 import type { AtmosphereSnapshot, BeatId, WeatherMode } from '../types/weather';
+import { BeatFigures } from './TooltipCards';
 
 interface ScrollStoryProps {
   activeBeat: BeatId;
   snapshot: AtmosphereSnapshot;
   mode: WeatherMode;
   onToggleMode: (next: WeatherMode) => void;
+  /** Phones: show the beat's figures inside the card instead of over the globe. */
+  inlineFigures?: boolean;
+  scrollProgress: number;
   onJumpBeat: (beat: BeatId) => void;
   onReadBriefing?: () => void;
 }
@@ -70,6 +74,8 @@ export function ScrollStory({
   snapshot,
   mode,
   onToggleMode,
+  inlineFigures = false,
+  scrollProgress,
   onJumpBeat,
   onReadBriefing,
 }: ScrollStoryProps) {
@@ -90,7 +96,7 @@ export function ScrollStory({
             key={beat.id}
             id={`beat-${beat.id}`}
             aria-labelledby={`beat-${beat.id}-title`}
-            className="min-h-screen flex items-end md:items-center px-4 sm:px-8 pb-10 pt-24 md:py-24"
+            className="min-h-screen flex items-end md:items-center px-4 sm:px-8 pb-10 pt-[55vh] md:py-24"
           >
             <article
               className={`pointer-events-auto max-w-md rounded-2xl border backdrop-blur-xl p-5 sm:p-6 shadow-2xl transition-[opacity,transform,border-color,background-color] duration-300 ${
@@ -141,6 +147,7 @@ export function ScrollStory({
                 {beat.id === 5 && (
                   <p>{battlegroundReading(snapshot.scandiHigh.pressureMslHpa, snapshot.ukSurface.pressureMslHpa)}</p>
                 )}
+                {inlineFigures && <BeatFigures beat={beat.id} snapshot={snapshot} scrollProgress={scrollProgress} />}
               </div>
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
