@@ -1,0 +1,32 @@
+{
+  "dataset": "ERA5 Reanalysis (1940–present) Early-Winter Stratospheric Baseline (Late Oct – Mid Nov, 60°N–90°N, 10 hPa)",
+  "notes": "Based on Met Office Deep Dive 17/11/2026 ('Stratosphere downwards') & ERA5 60°N/Polar Cap climatology.",
+  "novemberClimatology": {
+    "zonalMeanWind10HpaMs": 26.4,
+    "temp10HpaC": -64.5,
+    "polarCapTemp10HpaC": -71.8,
+    "wave1GeopotentialAmpM": 310,
+    "wave2GeopotentialAmpM": 145
+  },
+  "verticalClimatology60N_Nov": {
+    "10": 26.4,
+    "20": 22.8,
+    "50": 17.5,
+    "100": 13.8,
+    "250": 18.2,
+    "500": 11.4,
+    "850": 6.8,
+    "1000": 4.2
+  },
+  "historicalComparisonBars": [
+    { "label": "ERA5 Mean (1940–2025)", "wave1M": 310, "wave2M": 145 },
+    { "label": "Strong El Niño Nov Avg", "wave1M": 465, "wave2M": 210 },
+    { "label": "Nov 2026 Early-SSW Event", "wave1M": 890, "wave2M": 540 }
+  ],
+  "sswThresholds": {
+    "majorReversalMs": 0.0,
+    "couplingLagWeeksMin": 2,
+    "couplingLagWeeksMax": 6,
+    "scottishColdSnapC": [-9.0, -7.7]
+  }
+}

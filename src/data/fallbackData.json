@@ -1,0 +1,97 @@
+{
+  "mode": "case-study",
+  "fetchSource": "case-study",
+  "sourceLabel": "Nov 2026 Met Office Deep Dive Case Study (Early-Season SSW)",
+  "isLiveSuccess": false,
+  "fetchedAtIso": "2026-11-17T12:00:00Z",
+  "validTimeIso": "2026-11-17T12:00:00Z",
+  "ukSurface": {
+    "tempC": -4.2,
+    "feelsLikeC": -11.4,
+    "windSpeed10mMs": 9.8,
+    "windGusts10mMs": 16.4,
+    "windDirection10mDeg": 68,
+    "pressureMslHpa": 1008.4,
+    "temp850HpaC": -8.6,
+    "freezingLevelM": 120,
+    "snowfallCmHr": 0.4,
+    "jetSpeed250HpaMs": 54.6,
+    "jetDirection250HpaDeg": 264,
+    "scotlandColdSnapRange": "-7.7°C to -9.0°C"
+  },
+  "scandiHigh": {
+    "pressureMslHpa": 1038.2,
+    "tempC": -8.6,
+    "feelsLikeC": -15.2,
+    "temp850HpaC": -12.4
+  },
+  "atlanticLow": {
+    "pressureMslHpa": 974.5,
+    "tempC": 9.4,
+    "feelsLikeC": 3.1,
+    "temp850HpaC": 1.8
+  },
+  "stratosphere60N": {
+    "zonalMeanWindMs": -7.8,
+    "temp10HpaC": -36.4,
+    "polarCapTemp10HpaC": -28.4,
+    "polarCapTempAnomalyC": 43.4,
+    "temp60NAnomalyC": 28.1,
+    "poleTo60NGradientC": 8.0,
+    "polarTemp24hDeltaC": 14.2,
+    "geopotentialHeight10HpaM": 30420,
+    "sswThresholdMs": 0.0,
+    "isReversed": true,
+    "stratThermalFeelNote": "Actual 30 km temp -28.4°C (+43.4°C vs ERA5). At ~1% sea-level density, surface wind chill does not apply, yet thermal reversal wrecks the vortex.",
+    "timeSeries24hMs": [
+      { "time": "-24h", "zonalWindMs": 6.4 },
+      { "time": "-18h", "zonalWindMs": 2.9 },
+      { "time": "-12h", "zonalWindMs": -0.8 },
+      { "time": "-6h", "zonalWindMs": -4.6 },
+      { "time": "Now", "zonalWindMs": -7.8 },
+      { "time": "+6h", "zonalWindMs": -9.4 },
+      { "time": "+12h", "zonalWindMs": -10.8 },
+      { "time": "+18h", "zonalWindMs": -11.2 }
+    ],
+    "tempSeries24hC": [
+      { "time": "-24h", "polarTempC": -42.6, "lat60TempC": -43.2 },
+      { "time": "-18h", "polarTempC": -38.8, "lat60TempC": -41.5 },
+      { "time": "-12h", "polarTempC": -35.2, "lat60TempC": -39.8 },
+      { "time": "-6h", "polarTempC": -31.6, "lat60TempC": -38.0 },
+      { "time": "Now", "polarTempC": -28.4, "lat60TempC": -36.4 },
+      { "time": "+6h", "polarTempC": -26.8, "lat60TempC": -35.6 },
+      { "time": "+12h", "polarTempC": -25.4, "lat60TempC": -34.9 },
+      { "time": "+18h", "polarTempC": -24.9, "lat60TempC": -34.5 }
+    ],
+    "ringSamples": [
+      { "lonDeg": -135, "windSpeedMs": 19.2, "windDirectionDeg": 102, "zonalUMs": -18.8, "geopotentialHeightM": 31320, "tempC": -31.0 },
+      { "lonDeg": -90, "windSpeedMs": 14.5, "windDirectionDeg": 120, "zonalUMs": -12.6, "geopotentialHeightM": 30850, "tempC": -34.2 },
+      { "lonDeg": -45, "windSpeedMs": 11.4, "windDirectionDeg": 240, "zonalUMs": 9.9, "geopotentialHeightM": 29910, "tempC": -41.5 },
+      { "lonDeg": 0, "windSpeedMs": 16.0, "windDirectionDeg": 88, "zonalUMs": -16.0, "geopotentialHeightM": 30540, "tempC": -36.0 },
+      { "lonDeg": 45, "windSpeedMs": 21.8, "windDirectionDeg": 95, "zonalUMs": -21.7, "geopotentialHeightM": 30980, "tempC": -32.8 },
+      { "lonDeg": 90, "windSpeedMs": 18.0, "windDirectionDeg": 258, "zonalUMs": 17.6, "geopotentialHeightM": 29620, "tempC": -44.1 },
+      { "lonDeg": 135, "windSpeedMs": 15.2, "windDirectionDeg": 105, "zonalUMs": -14.7, "geopotentialHeightM": 30150, "tempC": -38.4 },
+      { "lonDeg": 180, "windSpeedMs": 9.4, "windDirectionDeg": 115, "zonalUMs": -8.5, "geopotentialHeightM": 30890, "tempC": -33.2 }
+    ]
+  },
+  "waves": {
+    "wave1HeightAmpM": 890,
+    "wave2HeightAmpM": 540,
+    "era5NovClimWave1M": 310,
+    "era5NovClimWave2M": 145,
+    "wave1Norm": 0.92,
+    "wave2Norm": 0.78,
+    "historicPercentileEarlyNov": 98
+  },
+  "verticalProfile": [
+    { "pressureHpa": 10, "altitudeKm": 30.0, "windSpeedMs": 15.6, "windDirectionDeg": 90, "zonalUMs": -7.8, "climatologyUMs": 26.4, "anomalyMs": -34.2, "tempC": -36.4 },
+    { "pressureHpa": 20, "altitudeKm": 26.0, "windSpeedMs": 13.1, "windDirectionDeg": 94, "zonalUMs": -5.4, "climatologyUMs": 22.8, "anomalyMs": -28.2, "tempC": -42.1 },
+    { "pressureHpa": 50, "altitudeKm": 20.5, "windSpeedMs": 9.8, "windDirectionDeg": 112, "zonalUMs": -2.1, "climatologyUMs": 17.5, "anomalyMs": -19.6, "tempC": -51.4 },
+    { "pressureHpa": 100, "altitudeKm": 16.0, "windSpeedMs": 7.6, "windDirectionDeg": 230, "zonalUMs": 1.4, "climatologyUMs": 13.8, "anomalyMs": -12.4, "tempC": -56.8 },
+    { "pressureHpa": 250, "altitudeKm": 10.4, "windSpeedMs": 28.4, "windDirectionDeg": 258, "zonalUMs": 8.9, "climatologyUMs": 18.2, "anomalyMs": -9.3, "tempC": -52.2 },
+    { "pressureHpa": 500, "altitudeKm": 5.5, "windSpeedMs": 12.6, "windDirectionDeg": 248, "zonalUMs": 4.8, "climatologyUMs": 11.4, "anomalyMs": -6.6, "tempC": -30.5 },
+    { "pressureHpa": 850, "altitudeKm": 1.5, "windSpeedMs": 9.2, "windDirectionDeg": 82, "zonalUMs": -2.4, "climatologyUMs": 6.8, "anomalyMs": -9.2, "tempC": -8.6 },
+    { "pressureHpa": 1000, "altitudeKm": 0.1, "windSpeedMs": 8.1, "windDirectionDeg": 78, "zonalUMs": -3.1, "climatologyUMs": 4.2, "anomalyMs": -7.3, "tempC": -3.4 }
+  ],
+  "battlegroundSummary": "Scandinavian Blocking High (1038 hPa) deflects the Atlantic low (975 hPa), placing the UK in the cold easterly battleground."
+}
