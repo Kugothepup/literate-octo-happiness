@@ -121,12 +121,19 @@ export default function App() {
         <ScrollStory
           activeBeat={activeBeat}
           snapshot={snapshot}
+          mode={mode}
+          onToggleMode={(next) => void loadMode(next, false)}
           onJumpBeat={handleJumpBeat}
           onReadBriefing={handleJumpEditorial}
         />
       </div>
 
-      <BriefingEditorial snapshot={snapshot} onJumpBeat={handleJumpBeat} />
+      <BriefingEditorial
+        snapshot={snapshot}
+        mode={mode}
+        onToggleMode={(next) => void loadMode(next, false)}
+        onJumpBeat={handleJumpBeat}
+      />
     </div>
   );
 }

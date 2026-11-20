@@ -1,14 +1,22 @@
 import { ChevronDown } from 'lucide-react';
 import baseline from '../data/historicalBaseline.json';
 import { BEAT_DESCRIPTORS } from '../scene/cameraWaypoints';
-import type { AtmosphereSnapshot, BeatId } from '../types/weather';
+import type { AtmosphereSnapshot, BeatId, WeatherMode } from '../types/weather';
 
 interface ScrollStoryProps {
   activeBeat: BeatId;
   snapshot: AtmosphereSnapshot;
+  mode: WeatherMode;
+  onToggleMode: (next: WeatherMode) => void;
   onJumpBeat: (beat: BeatId) => void;
   onReadBriefing?: () => void;
 }
+
+/** Beats where the globe visibly changes between today and the November event. */
+const COMPARE_PROMPTS: Partial<Record<BeatId, { toEvent: string; toToday: string }>> = {
+  2: { toEvent: 'See the vortex during the November event', toToday: 'See today’s vortex' },
+  5: { toEvent: 'See the pattern during the November event', toToday: 'See today’s pattern' },
+};
 
 const MS_TO_MPH = 2.23694;
 const CLIM = baseline.novemberClimatology;
@@ -47,17 +55,27 @@ function dripReading(levels: AtmosphereSnapshot['verticalProfile']): string {
   return `Winds are weaker than normal at ${weaker} of ${measured.length} heights measured.`;
 }
 
-export function ScrollStory({ activeBeat, snapshot, onJumpBeat, onReadBriefing }: ScrollStoryProps) {
+export function ScrollStory({
+  activeBeat,
+  snapshot,
+  mode,
+  onToggleMode,
+  onJumpBeat,
+  onReadBriefing,
+}: ScrollStoryProps) {
   const validLabel = new Date(snapshot.validTimeIso).toUTCString().slice(5, 22);
   const isLive = snapshot.fetchSource === 'live-api' || snapshot.fetchSource === 'cached-live';
   const dataLabel = isLive ? 'Live now' : 'November case study';
   const s60 = snapshot.stratosphere60N;
+  // Offline: live mode is already showing the case study, so a comparison would do nothing.
+  const canCompare = isLive || mode === 'case-study';
 
   return (
     <main className="relative z-10 pointer-events-none">
       {BEAT_DESCRIPTORS.map((beat, idx) => {
         const isCurrent = activeBeat === beat.id;
         const next = BEAT_DESCRIPTORS[idx + 1];
+        const compare = COMPARE_PROMPTS[beat.id];
         return (
           <section
             key={beat.id}
@@ -118,6 +136,7 @@ export function ScrollStory({ activeBeat, snapshot, onJumpBeat, onReadBriefing }
                       <span className="text-slate-500">({Math.round(Math.abs(s60.zonalMeanWindMs) * MS_TO_MPH)} mph)</span>
                     </p>
                     <p>{vortexReading(s60.zonalMeanWindMs, s60.isReversed)}</p>
+                    <p className="text-slate-500">On the globe, the ring’s spin, colour and shape follow these readings.</p>
                   </>
                 )}
                 {beat.id === 3 && (
@@ -150,7 +169,18 @@ export function ScrollStory({ activeBeat, snapshot, onJumpBeat, onReadBriefing }
                 )}
               </div>
 
-              <div className="mt-3 flex justify-end">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                {compare && canCompare ? (
+                  <button
+                    type="button"
+                    onClick={() => onToggleMode(mode === 'live' ? 'case-study' : 'live')}
+                    className="inline-flex items-center rounded-lg border border-violet-400/35 bg-violet-500/10 px-2.5 py-1 text-[11px] font-mono text-violet-200 hover:bg-violet-500/20 transition"
+                  >
+                    {mode === 'live' ? compare.toEvent : compare.toToday}
+                  </button>
+                ) : (
+                  <span />
+                )}
                 {next ? (
                   <button
                     type="button"
@@ -167,7 +197,7 @@ export function ScrollStory({ activeBeat, snapshot, onJumpBeat, onReadBriefing }
                       onClick={onReadBriefing}
                       className="inline-flex items-center gap-1 rounded-lg bg-sky-500/15 border border-sky-400/35 px-2.5 py-1 text-[11px] font-mono text-sky-200 hover:bg-sky-500/25 transition"
                     >
-                      <span>Read the full briefing</span>
+                      <span>Read the full story</span>
                       <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                   )

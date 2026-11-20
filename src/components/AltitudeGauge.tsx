@@ -83,7 +83,7 @@ export function AltitudeGauge({
             onClick={onJumpEditorial}
             className="mt-3 w-full rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 px-2.5 py-1.5 text-[10.5px] font-mono text-sky-200 transition text-center"
           >
-            Read the briefing ↓
+            The full story ↓
           </button>
         )}
       </div>

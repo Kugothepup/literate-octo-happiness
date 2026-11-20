@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import { useProgress } from '@react-three/drei';
+import { SOURCE_VIDEO } from '../data/source';
 
 interface IntroHeroProps {
   onStart: () => void;
@@ -49,7 +50,7 @@ export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
             onClick={onSkipToBriefing}
             className="text-sm text-slate-400 hover:text-slate-200 underline-offset-4 hover:underline transition"
           >
-            Or skip to the full briefing
+            Or skip to the full story
           </button>
         </div>
 
@@ -58,7 +59,16 @@ export function IntroHero({ onStart, onSkipToBriefing }: IntroHeroProps) {
         </p>
 
         <p className="text-[11px] text-slate-500 max-w-md">
-          Based on the Met Office’s weekly Deep Dive of 17 November 2026. Live readings from Open-Meteo.
+          Based on the Met Office’s{' '}
+          <a
+            href={SOURCE_VIDEO.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-300 underline underline-offset-2 hover:text-white"
+          >
+            Deep Dive of {SOURCE_VIDEO.published}
+          </a>
+          , presented by {SOURCE_VIDEO.presenter}. Live readings from Open-Meteo.
         </p>
       </div>
     </section>
